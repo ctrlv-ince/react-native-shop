@@ -1,6 +1,8 @@
-import React, { useState, useCallback } from 'react';
-import { View, StyleSheet, ActivityIndicator, FlatList, ScrollView, Dimensions, TextInput } from 'react-native';
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, StyleSheet, ActivityIndicator, FlatList, ScrollView, Dimensions, TextInput, Text } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProducts } from '../../Redux/Actions/productActions';
 import axios from 'axios';
 
 import ProductList from './ProductList';
@@ -11,34 +13,23 @@ import baseURL from '../../assets/common/baseurl';
 var { height } = Dimensions.get('window');
 
 const ProductContainer = (props) => {
-    const [products, setProducts] = useState([]);
+    const dispatch = useDispatch();
+    const { products, loading: productsLoading, error } = useSelector(state => state.productsState);
+
     const [productsFiltered, setProductsFiltered] = useState([]);
     const [focus, setFocus] = useState(false);
     const [categories, setCategories] = useState([]);
     const [productsCtg, setProductsCtg] = useState([]);
     const [active, setActive] = useState();
-    const [initialState, setInitialState] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [maxPrice, setMaxPrice] = useState('');
 
     useFocusEffect(
         useCallback(() => {
+            dispatch(fetchProducts());
+            
             setFocus(false);
             setActive(-1);
             
-            // Products
-            axios
-                .get(`${baseURL}products`)
-                .then((res) => {
-                    setProducts(res.data);
-                    setProductsFiltered(res.data);
-                    setProductsCtg(res.data);
-                    setInitialState(res.data);
-                    setLoading(false);
-                })
-                .catch((error) => {
-                    console.log('Api call error')
-                })
         
             // Categories
             axios
@@ -48,18 +39,23 @@ const ProductContainer = (props) => {
                 })
                 .catch((error) => {
                     console.log('Api call error')
-                })
+                });
         
             return () => {
-                setProducts([]);
                 setProductsFiltered([]);
                 setFocus(false);
                 setCategories([]);
                 setActive();
-                setInitialState([]);
             };
-        }, [])
+        }, [dispatch])
     );
+
+    useEffect(() => {
+        if (products.length > 0) {
+            setProductsFiltered(products);
+            setProductsCtg(products);
+        }
+    }, [products]);
 
     const searchProduct = (text) => {
         setProductsFiltered(
@@ -70,12 +66,12 @@ const ProductContainer = (props) => {
     const filterByPrice = (priceText) => {
         setMaxPrice(priceText);
         if (priceText === '') {
-            setProductsCtg(initialState);
+            setProductsCtg(products);
             return;
         }
         const priceNum = parseFloat(priceText);
         setProductsCtg(
-            initialState.filter((i) => i.price <= priceNum)
+            products.filter((i) => i.price <= priceNum)
         );
     }
 
@@ -90,14 +86,16 @@ const ProductContainer = (props) => {
     // Categories
     const changeCtg = (ctg) => {
         if (ctg === 'all') {
-            setProductsCtg(initialState);
+            setProductsCtg(products);
             setActive(true);
         } else {
             setProductsCtg(
-                initialState.filter((i) => i.category._id === ctg || i.category === ctg)
+                products.filter((i) => i.category._id === ctg || i.category === ctg)
             );
         }
     };
+
+    if (productsLoading) return <ActivityIndicator size="large" color="red" />;
 
     return (
         <View style={styles.container}>

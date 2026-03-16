@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Image, View, StyleSheet, Text, ScrollView, Button } from 'react-native';
-import { useDispatch } from 'react-redux';
+import { Image, View, StyleSheet, Text, ScrollView, Button, ActivityIndicator } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
 import { addToCart } from '../../Redux/Actions/cartActions';
+import { fetchReviews } from '../../Redux/Actions/reviewActions';
 import Toast from 'react-native-toast-message';
 import axios from 'axios';
 import baseURL from '../../assets/common/baseurl';
@@ -9,15 +10,13 @@ import { useFocusEffect } from '@react-navigation/native';
 
 const SingleProduct = (props) => {
     const [item, setItem] = useState(props.route.params.item);
-    const [reviews, setReviews] = useState([]);
     const dispatch = useDispatch();
+    const { reviews, loading: reviewsLoading } = useSelector(state => state.reviewsState);
 
     useFocusEffect(
         useCallback(() => {
-            axios.get(`${baseURL}reviews/${item.id || item._id}`)
-                .then(res => setReviews(res.data))
-                .catch(err => console.log(err));
-        }, [])
+            dispatch(fetchReviews(item.id || item._id));
+        }, [dispatch])
     );
 
     return (
@@ -50,14 +49,18 @@ const SingleProduct = (props) => {
                             onPress={() => props.navigation.navigate('Review Form', { productId: item.id || item._id })} 
                         />
                     </View>
-                    {reviews.length > 0 ? reviews.map(r => (
-                        <View key={r._id} style={styles.reviewCard}>
-                            <Text style={{ fontWeight: 'bold' }}>{r.user?.name || 'User'}</Text>
-                            <Text style={{ color: 'gold' }}>★ {r.rating}</Text>
-                            <Text>{r.comment}</Text>
-                        </View>
-                    )) : (
-                        <Text style={{ marginTop: 10 }}>No reviews yet.</Text>
+                    {reviewsLoading ? (
+                        <ActivityIndicator />
+                    ) : (
+                        reviews.length > 0 ? reviews.map(r => (
+                            <View key={r._id} style={styles.reviewCard}>
+                                <Text style={{ fontWeight: 'bold' }}>{r.user?.name || 'User'}</Text>
+                                <Text style={{ color: 'gold' }}>★ {r.rating}</Text>
+                                <Text>{r.comment}</Text>
+                            </View>
+                        )) : (
+                            <Text style={{ marginTop: 10 }}>No reviews yet.</Text>
+                        )
                     )}
                 </View>
             </ScrollView>

@@ -1,35 +1,25 @@
-import React, { useState, useCallback } from 'react';
-import { View, FlatList, Text, StyleSheet } from 'react-native';
-import axios from 'axios';
-import baseURL from '../../assets/common/baseurl';
+import React, { useCallback } from 'react';
+import { View, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchOrders } from '../../Redux/Actions/orderActions';
 import { useFocusEffect } from '@react-navigation/native';
 import OrderCard from '../../Shared/OrderCard';
 
 const Orders = (props) => {
-    const [orderList, setOrderList] = useState();
+    const dispatch = useDispatch();
+    const { orders, loading, error } = useSelector(state => state.ordersState);
 
     useFocusEffect(
         useCallback(() => {
-            getOrders();
-            return () => {
-                setOrderList();
-            };
-        }, [])
+            dispatch(fetchOrders());
+        }, [dispatch])
     );
 
-    const getOrders = () => {
-        axios
-            .get(`${baseURL}orders`)
-            .then((x) => {
-                setOrderList(x.data);
-            })
-            .catch((error) => console.log(error));
-    };
-
+    if (loading) return <ActivityIndicator size="large" color="red" />;
     return (
         <View style={styles.container}>
             <FlatList
-                data={orderList}
+                data={orders}
                 renderItem={({ item }) => (
                     <OrderCard navigation={props.navigation} {...item} editMode={true} />
                 )}

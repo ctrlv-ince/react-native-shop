@@ -5,6 +5,7 @@ import Login from '../Screens/User/Login';
 import Register from '../Screens/User/Register';
 import UserProfile from '../Screens/User/UserProfile';
 import EditProfile from '../Screens/User/EditProfile';
+import OrderDetails from '../Screens/User/OrderDetails';
 
 const Stack = createStackNavigator();
 
@@ -35,6 +36,13 @@ export default function UserNavigator() {
             <Stack.Screen 
                 name="Edit Profile"
                 component={EditProfile}
+                options={{
+                    headerShown: true
+                }}
+            />
+            <Stack.Screen 
+                name="Order Details"
+                component={OrderDetails}
                 options={{
                     headerShown: true
                 }}

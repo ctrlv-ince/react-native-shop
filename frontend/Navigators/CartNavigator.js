@@ -1,8 +1,7 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import Cart from '../Screens/Cart/Cart';
-
-const DummyCheckoutNavigator = () => null;
+import CheckoutNavigator from './CheckoutNavigator';
 
 const Stack = createStackNavigator();
 
@@ -16,7 +15,13 @@ export default function CartNavigator() {
                     headerShown: false,
                 }}
             />
-            {/* Navigation placeholder mapped inside Main.js or separately */}
+            <Stack.Screen 
+                name="CheckoutNavigator"
+                component={CheckoutNavigator}
+                options={{
+                    headerShown: false,
+                }}
+            />
         </Stack.Navigator>
     )
 }

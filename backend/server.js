@@ -14,6 +14,7 @@ app.use(morgan('tiny'));
 const authJwt = require('./helpers/jwt');
 const errorHandler = require('./helpers/error-handler');
 
+app.use('/public/uploads', express.static(__dirname + '/public/uploads'));
 // app.use(authJwt()); 
 app.use(errorHandler);
 
@@ -32,9 +33,13 @@ mongoose.connect(MONGO_URI)
 
 // Routes
 const usersRoutes = require('./routes/users');
+const categoriesRoutes = require('./routes/categories');
+const productsRoutes = require('./routes/products');
 const api = process.env.API_URL || '/api/v1';
 
 app.use(`${api}/users`, usersRoutes);
+app.use(`${api}/categories`, categoriesRoutes);
+app.use(`${api}/products`, productsRoutes);
 
 app.get('/', (req, res) => {
   res.send('API is running...');

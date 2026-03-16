@@ -1,12 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Image, View, StyleSheet, Text, ScrollView, Button } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '../../Redux/Actions/cartActions';
 import Toast from 'react-native-toast-message';
+import axios from 'axios';
+import baseURL from '../../assets/common/baseurl';
+import { useFocusEffect } from '@react-navigation/native';
 
 const SingleProduct = (props) => {
     const [item, setItem] = useState(props.route.params.item);
+    const [reviews, setReviews] = useState([]);
     const dispatch = useDispatch();
+
+    useFocusEffect(
+        useCallback(() => {
+            axios.get(`${baseURL}reviews/${item.id || item._id}`)
+                .then(res => setReviews(res.data))
+                .catch(err => console.log(err));
+        }, [])
+    );
 
     return (
         <View style={styles.container}>
@@ -27,6 +39,26 @@ const SingleProduct = (props) => {
                         {item.countInStock > 0 ? 'Available' : 'Out of Stock'}
                     </Text>
                     <Text style={styles.description}>{item.description}</Text>
+                </View>
+
+                {/* Reviews Section */}
+                <View style={styles.reviewsContainer}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Text style={{ fontSize: 20, fontWeight: 'bold' }}>Reviews</Text>
+                        <Button 
+                            title="Write Review" 
+                            onPress={() => props.navigation.navigate('Review Form', { productId: item.id || item._id })} 
+                        />
+                    </View>
+                    {reviews.length > 0 ? reviews.map(r => (
+                        <View key={r._id} style={styles.reviewCard}>
+                            <Text style={{ fontWeight: 'bold' }}>{r.user?.name || 'User'}</Text>
+                            <Text style={{ color: 'gold' }}>★ {r.rating}</Text>
+                            <Text>{r.comment}</Text>
+                        </View>
+                    )) : (
+                        <Text style={{ marginTop: 10 }}>No reviews yet.</Text>
+                    )}
                 </View>
             </ScrollView>
 
@@ -108,6 +140,20 @@ const styles = StyleSheet.create({
     description: {
         textAlign: 'center',
         padding: 10
+    },
+    reviewsContainer: {
+        marginTop: 20,
+        padding: 10,
+        borderTopWidth: 1,
+        borderColor: '#ccc'
+    },
+    reviewCard: {
+        padding: 10,
+        marginVertical: 5,
+        backgroundColor: '#f9f9f9',
+        borderRadius: 5,
+        borderWidth: 1,
+        borderColor: '#eee'
     }
 });
 

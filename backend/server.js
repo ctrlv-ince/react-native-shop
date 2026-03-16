@@ -36,12 +36,14 @@ const usersRoutes = require('./routes/users');
 const categoriesRoutes = require('./routes/categories');
 const productsRoutes = require('./routes/products');
 const ordersRoutes = require('./routes/orders');
+const reviewsRoutes = require('./routes/reviews');
 const api = process.env.API_URL || '/api/v1';
 
 app.use(`${api}/users`, usersRoutes);
 app.use(`${api}/categories`, categoriesRoutes);
 app.use(`${api}/products`, productsRoutes);
 app.use(`${api}/orders`, ordersRoutes);
+app.use(`${api}/reviews`, reviewsRoutes);
 
 app.get('/', (req, res) => {
   res.send('API is running...');

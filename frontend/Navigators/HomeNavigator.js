@@ -4,6 +4,7 @@ import { View, Text } from 'react-native';
 
 import ProductContainer from '../Screens/Product/ProductContainer';
 import SingleProduct from '../Screens/Product/SingleProduct';
+import ReviewForm from '../Screens/Product/ReviewForm';
 
 const Stack = createStackNavigator();
 
@@ -20,6 +21,13 @@ export default function HomeNavigator() {
             <Stack.Screen 
                 name="Product Detail"
                 component={SingleProduct}
+                options={{
+                    headerShown: true,
+                }}
+            />
+            <Stack.Screen 
+                name="Review Form"
+                component={ReviewForm}
                 options={{
                     headerShown: true,
                 }}

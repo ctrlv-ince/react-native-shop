@@ -1,9 +1,11 @@
 const { Product } = require('../models/product');
 const { Category } = require('../models/category');
+const { User } = require('../models/user');
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const multer = require('multer');
+const { Expo } = require('expo-server-sdk');
 
 const FILE_TYPE_MAP = {
     'image/png': 'png',
@@ -140,6 +142,41 @@ router.delete('/:id', (req, res) => {
         .catch((err) => {
             return res.status(500).json({ success: false, error: err });
         });
+});
+
+router.post('/promo/:id', async (req, res) => {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+
+    const users = await User.find({ pushToken: { $exists: true, $ne: '' } });
+    
+    let expo = new Expo();
+    let messages = [];
+
+    for (let user of users) {
+        if (!Expo.isExpoPushToken(user.pushToken)) continue;
+
+        messages.push({
+            to: user.pushToken,
+            sound: 'default',
+            title: 'Special Promotion!',
+            body: `${product.name} is on sale! Check it out now!`,
+            data: { promoId: product._id }
+        });
+    }
+
+    try {
+        let chunks = expo.chunkPushNotifications(messages);
+        let tickets = [];
+        for (let chunk of chunks) {
+            let ticketChunk = await expo.sendPushNotificationsAsync(chunk);
+            tickets.push(...ticketChunk);
+        }
+        res.status(200).json({ success: true, message: 'Promo notifications sent', tickets });
+    } catch (error) {
+         console.error('Error sending push notifications', error);
+         res.status(500).json({ success: false, error: error });
+    }
 });
 
 module.exports = router;

@@ -30,6 +30,14 @@ const Products = (props) => {
             .catch((error) => console.log(error));
     };
 
+    const sendPromo = (id) => {
+        axios.post(`${baseURL}products/promo/${id}`)
+            .then(() => {
+                alert("Promo Notification Sent Successfully!");
+            })
+            .catch((error) => console.log(error));
+    };
+
     return (
         <View style={styles.container}>
             <View style={styles.buttonContainer}>
@@ -41,10 +49,14 @@ const Products = (props) => {
                 renderItem={({ item }) => (
                     <View style={styles.item}>
                         <Text style={styles.itemText}>{item.name}</Text>
-                        <View style={{flexDirection: 'row'}}>
-                           <Button title="Edit" onPress={() => props.navigation.navigate("ProductForm", { item })}/>
-                           <View style={{width: 10}}/>
-                           <Button title="Delete" color="red" onPress={() => deleteProduct(item.id)} />
+                        <View style={{flexDirection: 'column'}}>
+                           <View style={{flexDirection: 'row', marginBottom: 5}}>
+                               <Button title="Edit" onPress={() => props.navigation.navigate("ProductForm", { item })}/>
+                               <View style={{width: 5}}/>
+                               <Button title="Promo" color="orange" onPress={() => sendPromo(item.id)} />
+                               <View style={{width: 5}}/>
+                               <Button title="Delete" color="red" onPress={() => deleteProduct(item.id)} />
+                           </View>
                         </View>
                     </View>
                 )}

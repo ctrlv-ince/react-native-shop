@@ -3,6 +3,29 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const multer = require('multer');
+
+const FILE_TYPE_MAP = {
+    'image/png': 'png',
+    'image/jpeg': 'jpeg',
+    'image/jpg': 'jpg'
+};
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const isValid = FILE_TYPE_MAP[file.mimetype];
+        let uploadError = new Error('invalid image type');
+        if (isValid) uploadError = null;
+        cb(uploadError, 'public/uploads');
+    },
+    filename: function (req, file, cb) {
+        const fileName = file.originalname.split(' ').join('-');
+        const extension = FILE_TYPE_MAP[file.mimetype];
+        cb(null, `${fileName}-${Date.now()}.${extension}`);
+    }
+});
+
+const uploadOptions = multer({ storage: storage });
 
 // Get all users
 router.get('/', async (req, res) => {
@@ -73,7 +96,7 @@ router.post('/login', async (req, res) => {
 });
 
 // Update user profile (MP2)
-router.put('/:id', async (req, res) => {
+router.put('/:id', uploadOptions.single('photo'), async (req, res) => {
     
     const userExist = await User.findById(req.params.id);
     let newPassword;
@@ -81,6 +104,17 @@ router.put('/:id', async (req, res) => {
         newPassword = bcrypt.hashSync(req.body.password, 10);
     } else {
         newPassword = userExist.passwordHash;
+    }
+
+    const file = req.file;
+    let photopath;
+
+    if (file) {
+        const fileName = file.filename;
+        const basePath = `${req.protocol}://${req.get('host')}/public/uploads/`;
+        photopath = `${basePath}${fileName}`;
+    } else {
+        photopath = userExist.photo;
     }
 
     const user = await User.findByIdAndUpdate(
@@ -97,7 +131,7 @@ router.put('/:id', async (req, res) => {
             city: req.body.city,
             country: req.body.country,
             pushToken: req.body.pushToken || userExist.pushToken,
-            photo: req.body.photo || userExist.photo,
+            photo: photopath,
         },
         { new: true }
     );

@@ -1,5 +1,5 @@
 import React, { useContext, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, Button, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Button, ScrollView, Image } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
@@ -36,6 +36,10 @@ const UserProfile = (props) => {
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
+            <Image 
+                source={{ uri: userProfile?.photo ? userProfile.photo : "https://fakeimg.pl/200x200/" }}
+                style={styles.avatar}
+            />
             <Text style={{ fontSize: 30 }}>
                 {userProfile ? userProfile.name : ''}
             </Text>
@@ -47,8 +51,11 @@ const UserProfile = (props) => {
                     Phone: {userProfile ? userProfile.phone : ''}
                 </Text>
             </View>
-            <View style={{ marginTop: 80 }}>
-                <Button title={"Sign Out"} onPress={() => {
+            <View style={{ marginTop: 40, width: '80%' }}>
+                <Button title="Edit Profile" onPress={() => props.navigation.navigate('Edit Profile')}/>
+            </View>
+            <View style={{ marginTop: 20, width: '80%' }}>
+                <Button color="red" title={"Sign Out"} onPress={() => {
                     SecureStore.deleteItemAsync('jwt');
                     logoutUser(context.dispatch);
                 }}/>
@@ -62,6 +69,12 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         padding: 20
+    },
+    avatar: {
+        width: 150,
+        height: 150,
+        borderRadius: 75,
+        marginBottom: 20
     }
 });
 

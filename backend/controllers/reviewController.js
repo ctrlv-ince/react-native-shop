@@ -16,7 +16,7 @@ exports.createReview = async (req, res) => {
 
     // Verify purchased product
     // The user must have an order with status 'Delivered' or 'Shipped' (2 or 3) containing this product
-    const orders = await Order.find({ user: user, status: { $in: ['2', '3'] } }).populate('orderItems');
+    const orders = await Order.find({ user: user, status: { $in: ['Shipped', 'Delivered'] } }).populate('orderItems');
     if (!orders || orders.length === 0) {
         return res.status(403).send('You must have a verified purchase to leave a review.');
     }
@@ -61,16 +61,17 @@ exports.createReview = async (req, res) => {
 
 // User updates their own review
 exports.updateReview = async (req, res) => {
-    if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).send('Invalid Review Id');
+    const review = await Review.findById(req.params.id);
+    if (!review) return res.status(404).send('Review not found');
 
-    const review = await Review.findByIdAndUpdate(
-        req.params.id,
-        {
-            rating: req.body.rating,
-            comment: req.body.comment
-        },
-        { new: true }
-    );
+    // Verify ownership
+    if (review.user.toString() !== req.body.user) {
+        return res.status(403).send('You can only update your own review');
+    }
+
+    review.rating = req.body.rating;
+    review.comment = req.body.comment;
+    await review.save();
 
     if (!review) return res.status(400).send('the review cannot be updated!');
 

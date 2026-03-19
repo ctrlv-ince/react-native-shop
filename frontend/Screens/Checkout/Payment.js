@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Button, Text, StyleSheet } from 'react-native';
 
 const Payment = (props) => {
-    const order = props.route.params;
+    const order = props.route.params.order;
     const [selected, setSelected] = useState(1);
 
     const paymentMethods = [

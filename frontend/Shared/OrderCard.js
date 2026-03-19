@@ -1,82 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Button } from 'react-native';
+import { useDispatch } from 'react-redux';
+import { updateOrderStatus } from '../Redux/Actions/orderActions';
 import Toast from 'react-native-toast-message';
-import axios from 'axios';
-import baseURL from '../assets/common/baseurl';
 
 const OrderCard = (props) => {
-    const [orderStatus, setOrderStatus] = useState('');
+    const dispatch = useDispatch();
     const [statusText, setStatusText] = useState('');
-    const [statusChange, setStatusChange] = useState('');
     const [cardColor, setCardColor] = useState('#E74C3C');
+    const [statusChange, setStatusChange] = useState('');
 
     useEffect(() => {
-        if (props.status == '3') {
-            setOrderStatus(<Text>Shipped</Text>);
-            setStatusText('Shipped');
+        if (props.status === 'Delivered') {
+            setStatusText('Delivered');
             setCardColor('#2ECC71');
-        } else if (props.status == '2') {
-            setOrderStatus(<Text>Shipped</Text>);
+        } else if (props.status === 'Shipped') {
             setStatusText('Shipped');
             setCardColor('#F1C40F');
         } else {
-            setOrderStatus(<Text>Pending</Text>);
             setStatusText('Pending');
             setCardColor('#E74C3C');
         }
 
         return () => {
-            setOrderStatus();
-            setStatusText();
-            setCardColor();
+            setStatusText('');
+            setCardColor('');
         };
-    }, []);
+    }, [props.status]);
 
     const updateOrder = () => {
-        const config = {
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        };
-
-        const order = {
-            city: props.city,
-            country: props.country,
-            dateOrdered: props.dateOrdered,
-            id: props.id,
-            orderItems: props.orderItems,
-            phone: props.phone,
-            shippingAddress1: props.shippingAddress1,
-            shippingAddress2: props.shippingAddress2,
-            status: statusChange,
-            totalPrice: props.totalPrice,
-            user: props.user,
-            zip: props.zip
-        };
-
-        axios
-            .put(`${baseURL}orders/${props.id}`, order, config)
-            .then((res) => {
-                if (res.status == 200 || res.status == 201) {
-                    Toast.show({
-                        topOffset: 60,
-                        type: 'success',
-                        text1: 'Order Edited',
-                        text2: ''
-                    });
-                    setTimeout(() => {
-                        props.navigation.navigate('Products');
-                    }, 500);
-                }
-            })
-            .catch((error) => {
-                Toast.show({
-                    topOffset: 60,
-                    type: 'error',
-                    text1: 'Something went wrong',
-                    text2: 'Please try again'
-                });
+        if (!statusChange) {
+            Toast.show({
+                topOffset: 60,
+                type: 'error',
+                text1: 'Please select a status first'
             });
+            return;
+        }
+
+        dispatch(updateOrderStatus(props.id, statusChange));
+        Toast.show({
+            topOffset: 60,
+            type: 'success',
+            text1: 'Order Updated',
+            text2: `Status changed to ${statusChange}`
+        });
     };
 
     return (
@@ -97,8 +65,14 @@ const OrderCard = (props) => {
             </View>
             {props.editMode ? (
                 <View style={{ marginTop: 20 }}>
-                    <Button title="Mark as Shipped" onPress={() => setStatusChange('3')} />
+                    <Button title="Mark as Pending" color="#E74C3C" onPress={() => setStatusChange('Pending')} />
+                    <View style={{ marginBottom: 5 }}/>
+                    <Button title="Mark as Shipped" color="#F1C40F" onPress={() => setStatusChange('Shipped')} />
+                    <View style={{ marginBottom: 5 }}/>
+                    <Button title="Mark as Delivered" color="#2ECC71" onPress={() => setStatusChange('Delivered')} />
                     <View style={{ marginBottom: 10 }}/>
+                    {statusChange ? <Text style={{ textAlign: 'center', fontWeight: 'bold' }}>Selected: {statusChange}</Text> : null}
+                    <View style={{ marginBottom: 5 }}/>
                     <Button color="green" title="Update Order" onPress={() => updateOrder()} />
                 </View>
             ) : null}

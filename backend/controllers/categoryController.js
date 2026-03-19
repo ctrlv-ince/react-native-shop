@@ -4,7 +4,7 @@ exports.getCategories = async (req, res) => {
     const categoryList = await Category.find();
 
     if (!categoryList) {
-        res.status(500).json({ success: false });
+        return res.status(500).json({ success: false });
     }
     res.status(200).send(categoryList);
 };
@@ -13,7 +13,7 @@ exports.getCategoryById = async (req, res) => {
     const category = await Category.findById(req.params.id);
 
     if (!category) {
-        res.status(500).json({ message: 'The category with the given ID was not found.' });
+        return res.status(500).json({ message: 'The category with the given ID was not found.' });
     }
     res.status(200).send(category);
 };
@@ -32,11 +32,14 @@ exports.createCategory = async (req, res) => {
 };
 
 exports.updateCategory = async (req, res) => {
+    const existingCategory = await Category.findById(req.params.id);
+    if (!existingCategory) return res.status(400).send('Category not found!');
+
     const category = await Category.findByIdAndUpdate(
         req.params.id,
         {
             name: req.body.name,
-            icon: req.body.icon || category?.icon,
+            icon: req.body.icon || existingCategory.icon,
             color: req.body.color
         },
         { new: true }

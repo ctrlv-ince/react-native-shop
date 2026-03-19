@@ -14,10 +14,11 @@ const Login = (props) => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
+    // TODO: Replace with your actual Google OAuth client IDs for MP2 (20pts)
     const [request, response, promptAsync] = Google.useAuthRequest({
-        expoClientId: 'YOUR_EXPO_CLIENT_ID',
-        iosClientId: 'YOUR_IOS_CLIENT_ID',
-        androidClientId: 'YOUR_ANDROID_CLIENT_ID',
+        expoClientId: 'YOUR_EXPO_CLIENT_ID', // Replace with actual Expo client ID
+        iosClientId: 'YOUR_IOS_CLIENT_ID',     // Replace with actual iOS client ID
+        androidClientId: 'YOUR_ANDROID_CLIENT_ID', // Replace with actual Android client ID
     });
 
     useEffect(() => {

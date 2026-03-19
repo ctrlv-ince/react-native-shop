@@ -22,6 +22,7 @@ const ProductContainer = (props) => {
     const [productsCtg, setProductsCtg] = useState([]);
     const [active, setActive] = useState();
     const [maxPrice, setMaxPrice] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('all');
 
     useFocusEffect(
         useCallback(() => {
@@ -65,15 +66,27 @@ const ProductContainer = (props) => {
 
     const filterByPrice = (priceText) => {
         setMaxPrice(priceText);
-        if (priceText === '') {
-            setProductsCtg(products);
-            return;
-        }
-        const priceNum = parseFloat(priceText);
-        setProductsCtg(
-            products.filter((i) => i.price <= priceNum)
-        );
     }
+
+    // Combined category + price filter
+    useEffect(() => {
+        let filtered = products;
+
+        // Apply category filter
+        if (selectedCategory !== 'all') {
+            filtered = filtered.filter((i) => i.category._id === selectedCategory || i.category === selectedCategory);
+        }
+
+        // Apply price filter
+        if (maxPrice !== '') {
+            const priceNum = parseFloat(maxPrice);
+            if (!isNaN(priceNum)) {
+                filtered = filtered.filter((i) => i.price <= priceNum);
+            }
+        }
+
+        setProductsCtg(filtered);
+    }, [selectedCategory, maxPrice, products]);
 
     const openList = () => {
         setFocus(true);
@@ -85,13 +98,9 @@ const ProductContainer = (props) => {
 
     // Categories
     const changeCtg = (ctg) => {
+        setSelectedCategory(ctg);
         if (ctg === 'all') {
-            setProductsCtg(products);
             setActive(true);
-        } else {
-            setProductsCtg(
-                products.filter((i) => i.category._id === ctg || i.category === ctg)
-            );
         }
     };
 

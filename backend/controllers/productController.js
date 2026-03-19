@@ -13,7 +13,7 @@ exports.getProducts = async (req, res) => {
     const productList = await Product.find(filter).populate('category');
 
     if (!productList) {
-        res.status(500).json({ success: false });
+        return res.status(500).json({ success: false });
     }
     res.send(productList);
 };
@@ -22,7 +22,7 @@ exports.getProductById = async (req, res) => {
     const product = await Product.findById(req.params.id).populate('category');
 
     if (!product) {
-        res.status(500).json({ success: false });
+        return res.status(500).json({ success: false });
     }
     res.send(product);
 };

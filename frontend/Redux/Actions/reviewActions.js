@@ -10,3 +10,25 @@ export const fetchReviews = (productId) => async (dispatch) => {
         dispatch({ type: 'FETCH_REVIEWS_FAIL', payload: error.message });
     }
 };
+
+export const createReview = (reviewData) => async (dispatch) => {
+    try {
+        const { data } = await axios.post(`${baseURL}reviews`, reviewData);
+        dispatch({ type: 'ADD_REVIEW_SUCCESS', payload: data });
+        return { success: true };
+    } catch (error) {
+        const msg = error.response?.data ? error.response.data : 'Failed to submit review';
+        return { success: false, message: msg };
+    }
+};
+
+export const updateReview = (id, reviewData) => async (dispatch) => {
+    try {
+        const { data } = await axios.put(`${baseURL}reviews/${id}`, reviewData);
+        dispatch({ type: 'UPDATE_REVIEW_SUCCESS', payload: data });
+        return { success: true };
+    } catch (error) {
+        const msg = error.response?.data ? error.response.data : 'Failed to update review';
+        return { success: false, message: msg };
+    }
+};

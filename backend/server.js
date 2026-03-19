@@ -15,7 +15,7 @@ const authJwt = require('./helpers/jwt');
 const errorHandler = require('./helpers/error-handler');
 
 app.use('/public/uploads', express.static(__dirname + '/public/uploads'));
-// app.use(authJwt()); 
+app.use(authJwt()); 
 app.use(errorHandler);
 
 // Environment Variables

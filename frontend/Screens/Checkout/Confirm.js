@@ -9,11 +9,11 @@ import baseURL from '../../assets/common/baseurl';
 var { width, height } = Dimensions.get('window');
 
 const Confirm = (props) => {
-    const finalOrder = props.route.params;
+    const finalOrder = props.route.params.order;
     const dispatch = useDispatch();
 
     const confirmOrder = () => {
-        const orderParams = finalOrder.order.order;
+        const orderParams = finalOrder;
 
         axios
             .post(`${baseURL}orders`, orderParams)
@@ -50,14 +50,14 @@ const Confirm = (props) => {
                     <View style={{ borderWidth: 1, borderColor: 'orange', padding: 10, marginTop: 20 }}>
                         <Text style={styles.title}>Shipping to:</Text>
                         <View style={{ padding: 8 }}>
-                            <Text>Address: {finalOrder.order.order.shippingAddress1}</Text>
-                            <Text>Address2: {finalOrder.order.order.shippingAddress2}</Text>
-                            <Text>City: {finalOrder.order.order.city}</Text>
-                            <Text>Zip Code: {finalOrder.order.order.zip}</Text>
-                            <Text>Country: {finalOrder.order.order.country}</Text>
+                        <Text>Address: {finalOrder.shippingAddress1}</Text>
+                            <Text>Address2: {finalOrder.shippingAddress2}</Text>
+                            <Text>City: {finalOrder.city}</Text>
+                            <Text>Zip Code: {finalOrder.zip}</Text>
+                            <Text>Country: {finalOrder.country}</Text>
                         </View>
                         <Text style={styles.title}>Items:</Text>
-                        {finalOrder.order.order.orderItems.map((x) => {
+                        {finalOrder.orderItems.map((x) => {
                             return (
                                 <View style={styles.listItem} key={x.product ? x.product : Math.random()}>
                                     <View>

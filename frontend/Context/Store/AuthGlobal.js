@@ -14,15 +14,18 @@ const AuthGlobal = (props) => {
     const [showChild, setShowChild] = useState(false);
 
     useEffect(() => {
-        setShowChild(true);
         const loadToken = async () => {
              const jwt = await SecureStore.getItemAsync('jwt');
              if (jwt) {
-                 const decoded = jwtDecode(jwt);
-                 if (showChild) {
+                 try {
+                     const decoded = jwtDecode(jwt);
                      dispatch({ type: SET_CURRENT_USER, payload: decoded, userProfile: decoded });
+                 } catch (e) {
+                     console.log('Invalid token, clearing');
+                     await SecureStore.deleteItemAsync('jwt');
                  }
              }
+             setShowChild(true);
         }
         loadToken();
         return () => setShowChild(false);

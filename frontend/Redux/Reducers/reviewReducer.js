@@ -14,6 +14,13 @@ const reviewReducer = (state = initialState, action) => {
             return { ...state, loading: false, error: action.payload };
         case 'ADD_REVIEW_SUCCESS':
             return { ...state, reviews: [...state.reviews, action.payload] };
+        case 'UPDATE_REVIEW_SUCCESS':
+            return { 
+                ...state, 
+                reviews: state.reviews.map(r => 
+                    r._id === action.payload._id ? action.payload : r
+                ) 
+            };
         default:
             return state;
     }

@@ -4,7 +4,7 @@ import { StyleSheet, View, Dimensions, Image, Text, Button } from 'react-native'
 const { width } = Dimensions.get('window');
 
 const ProductCard = (props) => {
-    const { name, price, image, countInStock } = props;
+    const { name, price, image, countInStock, onPress } = props;
 
     return (
         <View style={styles.container}>
@@ -21,7 +21,7 @@ const ProductCard = (props) => {
 
             { countInStock > 0 ? (
                 <View style={{ marginBottom: 60 }}>
-                    <Button title={'Add'} color={'green'} />
+                    <Button title={'Add'} color={'green'} onPress={onPress} />
                 </View>
             ) : <Text style={{ marginTop: 20 }}>Currently Unavailable</Text>}
         </View>

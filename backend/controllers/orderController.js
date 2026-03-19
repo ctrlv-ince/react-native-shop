@@ -6,7 +6,7 @@ exports.getOrders = async (req, res) => {
     const orderList = await Order.find().populate('user', 'name').sort({ dateOrdered: -1 });
 
     if (!orderList) {
-        res.status(500).json({ success: false });
+        return res.status(500).json({ success: false });
     }
     res.send(orderList);
 };
@@ -23,7 +23,7 @@ exports.getOrderById = async (req, res) => {
         });
 
     if (!order) {
-        res.status(500).json({ success: false });
+        return res.status(500).json({ success: false });
     }
     res.send(order);
 };
@@ -112,9 +112,9 @@ exports.deleteOrder = (req, res) => {
     Order.findByIdAndDelete(req.params.id)
         .then(async (order) => {
             if (order) {
-                await order.orderItems.map(async (orderItem) => {
+                await Promise.all(order.orderItems.map(async (orderItem) => {
                     await OrderItem.findByIdAndDelete(orderItem);
-                });
+                }));
                 return res.status(200).json({ success: true, message: 'the order is deleted!' });
             } else {
                 return res.status(404).json({ success: false, message: 'order not found!' });

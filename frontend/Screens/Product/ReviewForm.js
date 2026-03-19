@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ScrollView } from 'react-native';
+import { useDispatch } from 'react-redux';
+import { createReview, updateReview } from '../../Redux/Actions/reviewActions';
 import axios from 'axios';
 import baseURL from '../../assets/common/baseurl';
 import { AuthContext } from '../../Context/Store/AuthGlobal';
@@ -11,6 +13,7 @@ const ReviewForm = (props) => {
     const [comment, setComment] = useState('');
     const [existingReviewId, setExistingReviewId] = useState(null);
     const context = useContext(AuthContext);
+    const dispatch = useDispatch();
 
     useEffect(() => {
         // Fetch existing review if any
@@ -28,7 +31,7 @@ const ReviewForm = (props) => {
         }
     }, []);
 
-    const submitReview = () => {
+    const submitReview = async () => {
         if (!context.stateUser.isAuthenticated) {
             Toast.show({ type: 'error', text1: 'Please login to review' });
             return;
@@ -42,27 +45,23 @@ const ReviewForm = (props) => {
         };
 
         if (existingReviewId) {
-            // Update
-            axios.put(`${baseURL}reviews/${existingReviewId}`, reviewData)
-                .then(res => {
-                    Toast.show({ type: 'success', text1: 'Review updated!' });
-                    props.navigation.goBack();
-                })
-                .catch(err => {
-                    Toast.show({ type: 'error', text1: 'Failed to update review' });
-                });
+            // Update via Redux
+            const result = await dispatch(updateReview(existingReviewId, reviewData));
+            if (result.success) {
+                Toast.show({ type: 'success', text1: 'Review updated!' });
+                props.navigation.goBack();
+            } else {
+                Toast.show({ type: 'error', text1: result.message || 'Failed to update review' });
+            }
         } else {
-            // Create
-            axios.post(`${baseURL}reviews`, reviewData)
-                .then(res => {
-                    Toast.show({ type: 'success', text1: 'Review submitted!' });
-                    props.navigation.goBack();
-                })
-                .catch(err => {
-                    // Check if 403 verified purchase error
-                    const msg = err.response?.data ? err.response.data : 'Failed to submit review';
-                    Toast.show({ type: 'error', text1: msg });
-                });
+            // Create via Redux
+            const result = await dispatch(createReview(reviewData));
+            if (result.success) {
+                Toast.show({ type: 'success', text1: 'Review submitted!' });
+                props.navigation.goBack();
+            } else {
+                Toast.show({ type: 'error', text1: result.message || 'Failed to submit review' });
+            }
         }
     };
 
@@ -89,7 +88,7 @@ const ReviewForm = (props) => {
                 onChangeText={setComment} 
             />
 
-            <Button title="Submit" onPress={submitReview} />
+            <Button title={existingReviewId ? 'Update Review' : 'Submit'} onPress={submitReview} />
         </ScrollView>
     );
 };

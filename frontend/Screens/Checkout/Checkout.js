@@ -25,7 +25,7 @@ const Checkout = (props) => {
         }
 
         return () => {
-            setOrderItems();
+            setOrderItems([]);
         }
     }, [cartItems]);
 
@@ -39,7 +39,7 @@ const Checkout = (props) => {
             city,
             country,
             dateOrdered: Date.now(),
-            orderItems,
+            orderItems: cartItems.map(item => ({ product: item.id, quantity: item.quantity })),
             phone,
             shippingAddress1: address,
             shippingAddress2: address2,

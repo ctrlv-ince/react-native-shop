@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Dimensions, Text } from 'react-native';
+import { View, StyleSheet, Dimensions, Text, TouchableOpacity } from 'react-native';
 
 var { width } = Dimensions.get("window")
 
@@ -9,12 +9,16 @@ const SearchedProduct = (props) => {
         <View style={{ width: width }}>
             {productsFiltered.length > 0 ? (
                 productsFiltered.map((item) => (
-                    <View key={item._id} style={styles.item}>
+                    <TouchableOpacity 
+                        key={item._id} 
+                        style={styles.item}
+                        onPress={() => props.navigation.navigate("Product Detail", { item: item })}
+                    >
                         <View style={styles.center}>
-                            <Text>{item.name}</Text>
-                            <Text>{item.description}</Text>
+                            <Text style={{ fontWeight: 'bold' }}>{item.name}</Text>
+                            <Text numberOfLines={1}>{item.description}</Text>
                         </View>
-                    </View>
+                    </TouchableOpacity>
                 ))
             ) : (
                 <View style={styles.center}>

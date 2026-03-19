@@ -14,7 +14,7 @@ import baseURL from '../assets/common/baseurl';
 
 const Tab = createBottomTabNavigator();
 
-const DummyScreen = () => <View><Text>Screen</Text></View>
+
 
 export default function Main({ navigation }) {
     const dispatch = useDispatch();
@@ -39,13 +39,18 @@ export default function Main({ navigation }) {
 
         registerForPushNotificationsAsync().then(async token => {
             if (token) {
-                // In a real scenario we save this token to the user profile
-                // but we only do it if the user is logged in
                const jwt = await SecureStore.getItemAsync('jwt');
                if (jwt) {
-                    // This assumes we have userId stored somewhere or we decode JWT again or just let the backend update token on login.
-                    // For the sake of the requirement:
-                    console.log("Push token:", token);
+                    try {
+                        const decoded = require('jwt-decode').jwtDecode(jwt);
+                        await axios.put(`${baseURL}users/${decoded.userId}`, 
+                            { pushToken: token },
+                            { headers: { Authorization: `Bearer ${jwt}` } }
+                        );
+                        console.log('Push token saved to backend');
+                    } catch (err) {
+                        console.log('Error saving push token:', err);
+                    }
                }
             }
         });

@@ -1,5 +1,5 @@
 import React, { useEffect, useContext, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Platform, KeyboardAvoidingView } from 'react-native';
 import { AuthContext } from '../../Context/Store/AuthGlobal';
 import { loginUser } from '../../Context/Actions/Auth.actions';
 import { Ionicons } from '@expo/vector-icons';
@@ -32,7 +32,10 @@ const Login = (props) => {
 
     useEffect(() => {
         if (context.stateUser.isAuthenticated === true) {
-            props.navigation.navigate('User Profile');
+            props.navigation.reset({
+                index: 0,
+                routes: [{ name: 'User Profile' }],
+            });
         }
     }, [context.stateUser.isAuthenticated]);
 
@@ -40,15 +43,34 @@ const Login = (props) => {
         const user = { email, password };
 
         if (email === '' || password === '') {
-            setError('Please fill in your credentials');
+            Toast.show({
+                topOffset: 60,
+                type: 'error',
+                text1: 'Incomplete Credentials',
+                text2: 'Please fill in your email and password'
+            });
             return;
         }
+
+        Toast.show({
+            topOffset: 60,
+            type: 'info',
+            text1: 'Signing In...',
+            text2: 'Please wait'
+        });
 
         loginUser(user, context.dispatch);
     };
 
     return (
-        <View style={styles.container}>
+        <KeyboardAvoidingView 
+            behavior={Platform.OS === "ios" ? "padding" : "height"} 
+            style={{ flex: 1 }}
+        >
+            <ScrollView 
+                contentContainerStyle={styles.container}
+                keyboardShouldPersistTaps="always"
+            >
             {/* Header */}
             <View style={styles.logoContainer}>
                 <View style={styles.iconCircle}>
@@ -134,16 +156,18 @@ const Login = (props) => {
                     <Text style={styles.registerLink}>Sign Up</Text>
                 </TouchableOpacity>
             </View>
-        </View>
+        </ScrollView>
+        </KeyboardAvoidingView>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        flexGrow: 1,
         backgroundColor: COLORS.background,
         justifyContent: 'center',
         paddingHorizontal: SPACING.lg,
+        paddingVertical: 40,
     },
     logoContainer: {
         alignItems: 'center',

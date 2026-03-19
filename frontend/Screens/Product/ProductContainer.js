@@ -1,11 +1,13 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { View, StyleSheet, ActivityIndicator, FlatList, Dimensions, TextInput, Text, TouchableOpacity } from 'react-native';
+import React, { useState, useCallback, useEffect, useContext } from 'react';
+import { View, StyleSheet, ActivityIndicator, FlatList, Dimensions, TextInput, Text, TouchableOpacity, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProducts } from '../../Redux/Actions/productActions';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
+import * as SecureStore from 'expo-secure-store';
+import { AuthContext } from '../../Context/Store/AuthGlobal';
 
 import ProductList from './ProductList';
 import SearchedProduct from './SearchedProduct';
@@ -20,6 +22,8 @@ const ProductContainer = (props) => {
     const dispatch = useDispatch();
     const navigation = useNavigation();
     const { products, loading: productsLoading, error } = useSelector(state => state.productsState);
+    const context = useContext(AuthContext);
+    const [userProfile, setUserProfile] = useState(null);
 
     const [productsFiltered, setProductsFiltered] = useState([]);
     const [focus, setFocus] = useState(false);
@@ -46,6 +50,19 @@ const ProductContainer = (props) => {
                 .catch((error) => {
                     console.log('Api call error')
                 });
+        
+            // User Profile
+            if (context.stateUser.isAuthenticated) {
+                SecureStore.getItemAsync('jwt').then(token => {
+                    if (token) {
+                        axios.get(`${baseURL}users/${context.stateUser.user.userId}`, {
+                            headers: { Authorization: `Bearer ${token}` }
+                        })
+                        .then(res => setUserProfile(res.data))
+                        .catch(() => {});
+                    }
+                });
+            }
         
             return () => {
                 setProductsFiltered([]);
@@ -121,7 +138,15 @@ const ProductContainer = (props) => {
                     style={styles.profileButton}
                     onPress={() => navigation.navigate('UserNav')}
                 >
-                    <Ionicons name="person-circle-outline" size={36} color={COLORS.primary} />
+                    {userProfile?.photo ? (
+                        <Image source={{ uri: userProfile.photo }} style={{ width: 36, height: 36, borderRadius: 18, borderWidth: 2, borderColor: COLORS.primary }} />
+                    ) : (
+                        <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: COLORS.primaryLight, justifyContent: 'center', alignItems: 'center' }}>
+                            <Text style={{ fontSize: 18, fontWeight: '800', color: COLORS.primary }}>
+                                {userProfile?.name ? userProfile.name.charAt(0).toUpperCase() : '?'}
+                            </Text>
+                        </View>
+                    )}
                 </TouchableOpacity>
             </View>
 

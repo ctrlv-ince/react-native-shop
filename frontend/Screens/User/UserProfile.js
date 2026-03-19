@@ -20,7 +20,10 @@ const UserProfile = (props) => {
                 context.stateUser.isAuthenticated === false || 
                 context.stateUser.isAuthenticated === null
             ) {
-                props.navigation.navigate('Login');
+                props.navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'Login' }],
+                });
             } else {
                 SecureStore.getItemAsync('jwt').then((res) => {
                     axios
@@ -32,7 +35,7 @@ const UserProfile = (props) => {
             }
 
             return () => {
-                setUserProfile();
+                // Kept empty to retain profile state across tab switches
             };
         }, [context.stateUser.isAuthenticated])
     );
@@ -41,11 +44,16 @@ const UserProfile = (props) => {
         <ScrollView contentContainerStyle={styles.container}>
             {/* Profile Card */}
             <View style={styles.profileCard}>
-                <View style={styles.avatarContainer}>
-                    <Image 
-                        source={{ uri: userProfile?.photo ? userProfile.photo : "https://fakeimg.pl/200x200/" }}
-                        style={styles.avatar}
-                    />
+                <View style={[styles.avatarContainer, !userProfile?.photo && { backgroundColor: COLORS.primaryLight }]}>
+                    {userProfile?.photo ? (
+                        <Image source={{ uri: userProfile.photo }} style={styles.avatar} />
+                    ) : (
+                        <View style={[styles.avatar, { justifyContent: 'center', alignItems: 'center' }]}>
+                            <Text style={{ fontSize: 40, fontWeight: '800', color: COLORS.primary }}>
+                                {userProfile?.name ? userProfile.name.charAt(0).toUpperCase() : '?'}
+                            </Text>
+                        </View>
+                    )}
                 </View>
                 <Text style={styles.name}>
                     {userProfile ? userProfile.name : ''}
@@ -81,23 +89,6 @@ const UserProfile = (props) => {
                     <Text style={styles.actionText}>Edit Profile</Text>
                     <Ionicons name="chevron-forward" size={18} color={COLORS.textMuted} />
                 </TouchableOpacity>
-
-                {userProfile?.isAdmin && (
-                    <TouchableOpacity 
-                        style={styles.actionRow}
-                        onPress={() => {
-                            // Navigate to admin panel via parent stack
-                            navigation.getParent()?.navigate('AdminNav');
-                        }}
-                        activeOpacity={0.6}
-                    >
-                        <View style={[styles.actionIcon, { backgroundColor: COLORS.accentLight }]}>
-                            <Ionicons name="shield-checkmark-outline" size={20} color={COLORS.accent} />
-                        </View>
-                        <Text style={styles.actionText}>Admin Panel</Text>
-                        <Ionicons name="chevron-forward" size={18} color={COLORS.textMuted} />
-                    </TouchableOpacity>
-                )}
             </View>
 
             {/* Sign Out */}

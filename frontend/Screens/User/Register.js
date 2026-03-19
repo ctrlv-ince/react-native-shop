@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Image, Platform, KeyboardAvoidingView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
@@ -34,14 +34,31 @@ const Register = (props) => {
 
     const register = () => {
         if (email === '' || name === '' || phone === '' || password === '') {
-            setError('Please fill in all required fields');
+            Toast.show({
+                topOffset: 60,
+                type: 'error',
+                text1: 'Incomplete Form',
+                text2: 'Please fill in all required fields'
+            });
             return;
         }
 
         if (password !== confirmPassword) {
-            setError('Passwords do not match');
+            Toast.show({
+                topOffset: 60,
+                type: 'error',
+                text1: 'Password Mismatch',
+                text2: 'Passwords do not match'
+            });
             return;
         }
+
+        Toast.show({
+            topOffset: 60,
+            type: 'info',
+            text1: 'Registering...',
+            text2: 'Please wait'
+        });
 
         let formData = new FormData();
         formData.append('name', name);
@@ -49,7 +66,7 @@ const Register = (props) => {
         formData.append('password', password);
         formData.append('phone', phone);
         formData.append('address', address);
-        formData.append('isAdmin', false);
+        formData.append('isAdmin', 'false');
 
         if (avatar) {
             const newImageUri = "file:///" + avatar.split("file:/").join("");
@@ -60,35 +77,62 @@ const Register = (props) => {
             });
         }
 
-        axios
-            .post(`${baseURL}users/register`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            })
-            .then((res) => {
-                if (res.status == 200) {
-                    Toast.show({
-                        topOffset: 60,
-                        type: 'success',
-                        text1: 'Registration Succeeded',
-                        text2: 'Please login into your account'
-                    });
-                    setTimeout(() => {
-                        props.navigation.navigate('Login');
-                    }, 500);
-                }
-            })
-            .catch((error) => {
+        fetch(`${baseURL}users/register`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                Accept: 'application/json'
+            },
+        })
+        .then((res) => {
+            if (res.ok) {
+                return res.json().then((data) => ({ status: res.status, data, ok: true }));
+            } else {
+                return res.json().then((data) => ({ status: res.status, data, ok: false })).catch(() => ({ status: res.status, data: { message: "Server error" }, ok: false }));
+            }
+        })
+        .then(({ status, data, ok }) => {
+            if (ok) {
+                Toast.show({
+                    topOffset: 60,
+                    type: 'success',
+                    text1: 'Registration Succeeded',
+                    text2: 'Please login into your account'
+                });
+                setTimeout(() => {
+                    props.navigation.navigate('Login');
+                }, 500);
+            } else {
+                console.log("Registration Error:", data);
+                const errorMsg = data.message || (typeof data === 'string' ? data : 'Please try again');
                 Toast.show({
                     topOffset: 60,
                     type: 'error',
-                    text1: 'Something went wrong',
-                    text2: 'Please try again'
+                    text1: 'Registration Failed',
+                    text2: errorMsg
                 });
+            }
+        })
+        .catch((error) => {
+            console.log("Network Error:", error.message);
+            Toast.show({
+                topOffset: 60,
+                type: 'error',
+                text1: 'Network Error',
+                text2: 'Please check your connection and try again'
             });
+        });
     };
 
     return (
-        <ScrollView contentContainerStyle={styles.container}>
+        <KeyboardAvoidingView 
+            behavior={Platform.OS === "ios" ? "padding" : "height"} 
+            style={{ flex: 1 }}
+        >
+            <ScrollView 
+                contentContainerStyle={styles.container}
+                keyboardShouldPersistTaps="always"
+            >
             {/* Header */}
             <View style={styles.logoContainer}>
                 <View style={styles.iconCircle}>
@@ -219,6 +263,7 @@ const Register = (props) => {
                 </TouchableOpacity>
             </View>
         </ScrollView>
+        </KeyboardAvoidingView>
     );
 };
 

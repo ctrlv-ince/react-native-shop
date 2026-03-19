@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
+import { AuthContext } from '../Context/Store/AuthGlobal';
 
 import Login from '../Screens/User/Login';
 import Register from '../Screens/User/Register';
@@ -11,8 +12,13 @@ import { STACK_HEADER_STYLE } from '../assets/common/theme';
 const Stack = createStackNavigator();
 
 export default function UserNavigator() {
+    const context = useContext(AuthContext);
+
     return (
-        <Stack.Navigator screenOptions={STACK_HEADER_STYLE}>
+        <Stack.Navigator 
+            initialRouteName={context.stateUser.isAuthenticated ? "User Profile" : "Login"}
+            screenOptions={STACK_HEADER_STYLE}
+        >
             <Stack.Screen 
                 name="Login"
                 component={Login}

@@ -47,7 +47,6 @@ const HomeScreen = (props) => {
 
             return () => {
                 setCategories([]);
-                setUserProfile(null);
             };
         }, [context.stateUser.isAuthenticated])
     );
@@ -86,7 +85,9 @@ const HomeScreen = (props) => {
                             <Image source={{ uri: userProfile.photo }} style={styles.avatar} />
                         ) : (
                             <View style={styles.avatarPlaceholder}>
-                                <Ionicons name="person" size={22} color={COLORS.primary} />
+                                <Text style={{ fontSize: 20, fontWeight: '800', color: COLORS.primary }}>
+                                    {userName?.charAt(0).toUpperCase() || '?'}
+                                </Text>
                             </View>
                         )}
                     </TouchableOpacity>
@@ -124,18 +125,6 @@ const HomeScreen = (props) => {
                         </View>
                         <Text style={styles.quickLabel}>Profile</Text>
                     </TouchableOpacity>
-                    {userProfile?.isAdmin && (
-                        <TouchableOpacity 
-                            style={styles.quickAction}
-                            onPress={() => navigation.navigate('AdminNav')}
-                            activeOpacity={0.7}
-                        >
-                            <View style={[styles.quickIcon, { backgroundColor: '#FEE2E2' }]}>
-                                <Ionicons name="shield-outline" size={22} color={COLORS.danger} />
-                            </View>
-                            <Text style={styles.quickLabel}>Admin</Text>
-                        </TouchableOpacity>
-                    )}
                 </View>
 
                 {/* Categories */}

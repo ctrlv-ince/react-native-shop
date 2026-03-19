@@ -9,8 +9,13 @@ function errorHandler(err, req, res, next) {
         return res.status(401).json({ message: err });
     }
 
+    console.error("Backend Error:", err);
+    
     // default to 500 server error
-    return res.status(500).json({ err: err });
+    return res.status(500).json({ 
+        message: err.message || 'Internal Server Error',
+        error: err 
+    });
 }
 
 module.exports = errorHandler;

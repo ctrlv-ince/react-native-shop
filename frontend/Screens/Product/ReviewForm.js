@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { createReview, updateReview } from '../../Redux/Actions/reviewActions';
+import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import baseURL from '../../assets/common/baseurl';
 import { AuthContext } from '../../Context/Store/AuthGlobal';
 import Toast from 'react-native-toast-message';
+import { COLORS, SPACING, RADIUS, SHADOWS, COMMON_STYLES } from '../../assets/common/theme';
 
 const ReviewForm = (props) => {
     const { productId } = props.route.params;
@@ -45,7 +47,6 @@ const ReviewForm = (props) => {
         };
 
         if (existingReviewId) {
-            // Update via Redux
             const result = await dispatch(updateReview(existingReviewId, reviewData));
             if (result.success) {
                 Toast.show({ type: 'success', text1: 'Review updated!' });
@@ -54,7 +55,6 @@ const ReviewForm = (props) => {
                 Toast.show({ type: 'error', text1: result.message || 'Failed to update review' });
             }
         } else {
-            // Create via Redux
             const result = await dispatch(createReview(reviewData));
             if (result.success) {
                 Toast.show({ type: 'success', text1: 'Review submitted!' });
@@ -67,56 +67,109 @@ const ReviewForm = (props) => {
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
-            <Text style={styles.title}>{existingReviewId ? 'Edit Your Review' : 'Write a Review'}</Text>
+            <View style={styles.card}>
+                <Text style={styles.title}>
+                    {existingReviewId ? 'Edit Your Review' : 'Write a Review'}
+                </Text>
+                <Text style={styles.subtitle}>
+                    {existingReviewId ? 'Update your rating and comment' : 'Share your experience with this product'}
+                </Text>
 
-            <View style={styles.starsContainer}>
-                {[1, 2, 3, 4, 5].map(num => (
-                    <Button 
-                        key={num} 
-                        title={`★ ${num}`} 
-                        color={rating >= num ? 'gold' : 'grey'} 
-                        onPress={() => setRating(num)} 
-                    />
-                ))}
+                {/* Star Rating */}
+                <Text style={styles.label}>Rating</Text>
+                <View style={styles.starsContainer}>
+                    {[1, 2, 3, 4, 5].map(num => (
+                        <TouchableOpacity
+                            key={num}
+                            onPress={() => setRating(num)}
+                            activeOpacity={0.6}
+                            style={styles.starButton}
+                        >
+                            <Ionicons
+                                name={rating >= num ? "star" : "star-outline"}
+                                size={32}
+                                color={rating >= num ? COLORS.warning : COLORS.textLight}
+                            />
+                        </TouchableOpacity>
+                    ))}
+                </View>
+
+                {/* Comment */}
+                <Text style={styles.label}>Comment</Text>
+                <TextInput 
+                    style={styles.input} 
+                    placeholder="Share your thoughts..." 
+                    placeholderTextColor={COLORS.textMuted}
+                    multiline 
+                    value={comment} 
+                    onChangeText={setComment}
+                    textAlignVertical="top"
+                />
+
+                {/* Submit */}
+                <TouchableOpacity
+                    style={COMMON_STYLES.primaryButton}
+                    onPress={submitReview}
+                    activeOpacity={0.7}
+                >
+                    <Text style={COMMON_STYLES.primaryButtonText}>
+                        {existingReviewId ? 'Update Review' : 'Submit Review'}
+                    </Text>
+                </TouchableOpacity>
             </View>
-
-            <TextInput 
-                style={styles.input} 
-                placeholder="Share your thoughts..." 
-                multiline 
-                value={comment} 
-                onChangeText={setComment} 
-            />
-
-            <Button title={existingReviewId ? 'Update Review' : 'Submit'} onPress={submitReview} />
         </ScrollView>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        padding: 20,
-        alignItems: 'center'
+        padding: SPACING.base,
+        backgroundColor: COLORS.background,
+        flexGrow: 1,
+    },
+    card: {
+        backgroundColor: COLORS.white,
+        borderRadius: RADIUS.lg,
+        padding: SPACING.lg,
+        ...SHADOWS.medium,
     },
     title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20
+        fontSize: 22,
+        fontWeight: '800',
+        color: COLORS.text,
+        marginBottom: 4,
+    },
+    subtitle: {
+        fontSize: 14,
+        color: COLORS.textMuted,
+        marginBottom: SPACING.lg,
+    },
+    label: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: COLORS.text,
+        marginBottom: SPACING.sm,
     },
     starsContainer: {
         flexDirection: 'row',
-        marginBottom: 20,
-        gap: 10
+        marginBottom: SPACING.lg,
+        gap: 8,
+    },
+    starButton: {
+        padding: 4,
     },
     input: {
         width: '100%',
-        height: 100,
-        borderWidth: 1,
-        borderColor: 'gray',
-        padding: 10,
-        marginBottom: 20,
-        borderRadius: 5,
-        backgroundColor: 'white'
+        height: 120,
+        borderWidth: 1.5,
+        borderColor: COLORS.inputBorder,
+        backgroundColor: COLORS.inputBg,
+        padding: SPACING.md,
+        marginBottom: SPACING.lg,
+        borderRadius: RADIUS.md,
+        fontSize: 14,
+        color: COLORS.text,
+        lineHeight: 22,
     }
 });
 

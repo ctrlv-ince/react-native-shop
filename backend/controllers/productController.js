@@ -33,15 +33,12 @@ exports.createProduct = async (req, res) => {
 
     const file = req.file;
     if (!file) return res.status(400).send('No image in the request');
-
-    const fileName = req.file.filename;
-    const basePath = `${req.protocol}://${req.get('host')}/public/uploads/`;
     
     let product = new Product({
         name: req.body.name,
         description: req.body.description,
         richDescription: req.body.richDescription,
-        image: `${basePath}${fileName}`,
+        image: req.file.path,
         brand: req.body.brand,
         price: req.body.price,
         category: req.body.category,
@@ -72,9 +69,7 @@ exports.updateProduct = async (req, res) => {
     let imagepath;
 
     if (file) {
-        const fileName = file.filename;
-        const basePath = `${req.protocol}://${req.get('host')}/public/uploads/`;
-        imagepath = `${basePath}${fileName}`;
+        imagepath = req.file.path;
     } else {
         imagepath = product.image;
     }

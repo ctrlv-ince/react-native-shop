@@ -1,69 +1,107 @@
 import React from 'react';
-import { StyleSheet, View, Dimensions, Image, Text, Button } from 'react-native';
+import { StyleSheet, View, Dimensions, Image, Text, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { COLORS, SPACING, RADIUS, SHADOWS } from '../../assets/common/theme';
 
 const { width } = Dimensions.get('window');
+const CARD_WIDTH = width / 2 - 24;
 
 const ProductCard = (props) => {
     const { name, price, image, countInStock, onPress } = props;
 
     return (
         <View style={styles.container}>
-            <Image 
-                style={styles.image}
-                resizeMode="cover"
-                source={{ uri: image ? image : 'https://cdn.pixabay.com/photo/2012/04/01/17/29/box-23649_960_720.png' }}
-            />
-            <View style={styles.card}/>
-            <Text style={styles.title}>
-                {name.length > 15 ? name.substring(0, 15 - 3) + '...' : name}
-            </Text>
-            <Text style={styles.price}>${price}</Text>
+            <View style={styles.imageContainer}>
+                <Image 
+                    style={styles.image}
+                    resizeMode="cover"
+                    source={{ uri: image ? image : 'https://cdn.pixabay.com/photo/2012/04/01/17/29/box-23649_960_720.png' }}
+                />
+            </View>
+            <View style={styles.infoContainer}>
+                <Text style={styles.title} numberOfLines={2}>
+                    {name}
+                </Text>
+                <Text style={styles.price}>₱{price}</Text>
 
-            { countInStock > 0 ? (
-                <View style={{ marginBottom: 60 }}>
-                    <Button title={'Add'} color={'green'} onPress={onPress} />
-                </View>
-            ) : <Text style={{ marginTop: 20 }}>Currently Unavailable</Text>}
+                {countInStock > 0 ? (
+                    <TouchableOpacity style={styles.addButton} onPress={onPress} activeOpacity={0.7}>
+                        <Ionicons name="cart-outline" size={16} color={COLORS.white} />
+                        <Text style={styles.addButtonText}>Add</Text>
+                    </TouchableOpacity>
+                ) : (
+                    <View style={styles.unavailableBadge}>
+                        <Text style={styles.unavailableText}>Out of Stock</Text>
+                    </View>
+                )}
+            </View>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        width: width / 2 - 20,
-        height: width / 1.7,
-        padding: 10,
-        borderRadius: 10,
-        marginTop: 55,
-        marginBottom: 5,
-        marginLeft: 10,
-        alignItems: 'center',
-        elevation: 8,
-        backgroundColor: 'white'
+        width: CARD_WIDTH,
+        backgroundColor: COLORS.surface,
+        borderRadius: RADIUS.lg,
+        marginTop: SPACING.md,
+        marginBottom: SPACING.sm,
+        overflow: 'hidden',
+        ...SHADOWS.medium,
+    },
+    imageContainer: {
+        width: '100%',
+        height: CARD_WIDTH * 0.85,
+        backgroundColor: COLORS.surfaceAlt,
+        borderTopLeftRadius: RADIUS.lg,
+        borderTopRightRadius: RADIUS.lg,
+        overflow: 'hidden',
     },
     image: {
-        width: width / 2 - 20 - 10,
-        height: width / 2 - 20 - 30,
-        backgroundColor: 'transparent',
-        position: 'absolute',
-        top: -45
+        width: '100%',
+        height: '100%',
     },
-    card: {
-        marginBottom: 10,
-        height: width / 2 - 20 - 90,
-        backgroundColor: 'transparent',
-        width: width / 2 - 20 - 10
+    infoContainer: {
+        padding: SPACING.md,
     },
     title: {
-        fontWeight: 'bold',
         fontSize: 14,
-        textAlign: 'center'
+        fontWeight: '700',
+        color: COLORS.text,
+        marginBottom: 4,
+        lineHeight: 18,
     },
     price: {
-        fontSize: 20,
-        color: 'orange',
-        marginTop: 10
-    }
+        fontSize: 18,
+        fontWeight: '800',
+        color: COLORS.primary,
+        marginBottom: SPACING.sm,
+    },
+    addButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: COLORS.primary,
+        paddingVertical: 8,
+        borderRadius: RADIUS.sm,
+        gap: 6,
+    },
+    addButtonText: {
+        color: COLORS.white,
+        fontSize: 14,
+        fontWeight: '700',
+    },
+    unavailableBadge: {
+        backgroundColor: COLORS.surfaceAlt,
+        paddingVertical: 8,
+        borderRadius: RADIUS.sm,
+        alignItems: 'center',
+    },
+    unavailableText: {
+        color: COLORS.danger,
+        fontSize: 12,
+        fontWeight: '600',
+    },
 });
 
 export default ProductCard;

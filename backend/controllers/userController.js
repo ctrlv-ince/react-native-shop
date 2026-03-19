@@ -21,19 +21,21 @@ exports.getUserById = async (req, res) => {
 };
 
 exports.registerUser = async (req, res) => {
+    // If a photo was uploaded via multer/cloudinary, use the URL
+    let photoUrl = '';
+    if (req.file) {
+        photoUrl = req.file.path; // Cloudinary returns the URL in path
+    }
+
     let user = new User({
         name: req.body.name,
         email: req.body.email,
         passwordHash: bcrypt.hashSync(req.body.password, 10),
         phone: req.body.phone,
         isAdmin: req.body.isAdmin,
-        street: req.body.street,
-        apartment: req.body.apartment,
-        zip: req.body.zip,
-        city: req.body.city,
-        country: req.body.country,
-        pushToken: req.body.pushToken || '', // Unit 2: notification push token saved on user model
-        photo: req.body.photo || '' // MP2: photo upload
+        address: req.body.address || '',
+        pushToken: req.body.pushToken || '',
+        photo: photoUrl,
     });
     user = await user.save();
 
@@ -75,13 +77,10 @@ exports.updateUser = async (req, res) => {
         newPassword = userExist.passwordHash;
     }
 
-    const file = req.file;
+    // If a photo was uploaded via multer/cloudinary, use the URL
     let photopath;
-
-    if (file) {
-        const fileName = file.filename;
-        const basePath = `${req.protocol}://${req.get('host')}/public/uploads/`;
-        photopath = `${basePath}${fileName}`;
+    if (req.file) {
+        photopath = req.file.path; // Cloudinary returns the URL in path
     } else {
         photopath = userExist.photo;
     }
@@ -89,23 +88,19 @@ exports.updateUser = async (req, res) => {
     const user = await User.findByIdAndUpdate(
         req.params.id,
         {
-            name: req.body.name,
-            email: req.body.email,
+            name: req.body.name || userExist.name,
+            email: req.body.email || userExist.email,
             passwordHash: newPassword,
-            phone: req.body.phone,
-            isAdmin: req.body.isAdmin,
-            street: req.body.street,
-            apartment: req.body.apartment,
-            zip: req.body.zip,
-            city: req.body.city,
-            country: req.body.country,
+            phone: req.body.phone || userExist.phone,
+            isAdmin: req.body.isAdmin !== undefined ? req.body.isAdmin : userExist.isAdmin,
+            address: req.body.address !== undefined ? req.body.address : userExist.address,
             pushToken: req.body.pushToken || userExist.pushToken,
             photo: photopath,
         },
         { new: true }
     );
 
-    if (!user) return res.status(400).send('the user cannot be created!');
+    if (!user) return res.status(400).send('the user cannot be updated!');
 
     res.send(user);
 };

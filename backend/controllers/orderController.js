@@ -1,9 +1,12 @@
 const { Order } = require('../models/order');
-const { OrderItem } = require('../models/order-item');
+const { Product } = require('../models/product');
 const { Expo } = require('expo-server-sdk');
 
 exports.getOrders = async (req, res) => {
-    const orderList = await Order.find().populate('user', 'name').sort({ dateOrdered: -1 });
+    const orderList = await Order.find()
+        .populate('user', 'name')
+        .populate('orderItems.product')
+        .sort({ dateOrdered: -1 });
 
     if (!orderList) {
         return res.status(500).json({ success: false });
@@ -15,11 +18,8 @@ exports.getOrderById = async (req, res) => {
     const order = await Order.findById(req.params.id)
         .populate('user', 'name email pushToken')
         .populate({
-            path: 'orderItems',
-            populate: {
-                path: 'product',
-                populate: 'category'
-            }
+            path: 'orderItems.product',
+            populate: 'category'
         });
 
     if (!order) {
@@ -29,31 +29,25 @@ exports.getOrderById = async (req, res) => {
 };
 
 exports.createOrder = async (req, res) => {
-    const orderItemsIds = Promise.all(
-        req.body.orderItems.map(async (orderItem) => {
-            let newOrderItem = new OrderItem({
-                quantity: orderItem.quantity,
-                product: orderItem.product
-            });
+    // Build order items array directly (no separate OrderItem collection)
+    const orderItems = req.body.orderItems.map(item => ({
+        quantity: item.quantity,
+        product: item.product
+    }));
 
-            newOrderItem = await newOrderItem.save();
-            return newOrderItem._id;
-        })
-    );
-    const orderItemsIdsResolved = await orderItemsIds;
-
+    // Calculate total price
     const totalPrices = await Promise.all(
-        orderItemsIdsResolved.map(async (orderItemId) => {
-            const orderItem = await OrderItem.findById(orderItemId).populate('product', 'price');
-            const totalPrice = orderItem.product.price * orderItem.quantity;
-            return totalPrice;
+        orderItems.map(async (item) => {
+            const product = await Product.findById(item.product).select('price');
+            if (!product) return 0;
+            return product.price * item.quantity;
         })
     );
 
     const totalPrice = totalPrices.reduce((a, b) => a + b, 0);
 
     let order = new Order({
-        orderItems: orderItemsIdsResolved,
+        orderItems: orderItems,
         shippingAddress1: req.body.shippingAddress1,
         shippingAddress2: req.body.shippingAddress2,
         city: req.body.city,
@@ -82,10 +76,6 @@ exports.updateOrder = async (req, res) => {
 
     if (!order) return res.status(400).send('the order cannot be update!');
 
-    // Wait, the professor asked to send a push notification after the update! I can do it here or via another frontend endpoint call. Doing it here.
-    // Fetch user push token from user reference in order.
-    
-    // We will do push logic when we configure expo-server-sdk.
     if (order.user && order.user.pushToken && Expo.isExpoPushToken(order.user.pushToken)) {
         let expo = new Expo();
         let messages = [];
@@ -108,19 +98,15 @@ exports.updateOrder = async (req, res) => {
     res.send(order);
 };
 
-exports.deleteOrder = (req, res) => {
-    Order.findByIdAndDelete(req.params.id)
-        .then(async (order) => {
-            if (order) {
-                await Promise.all(order.orderItems.map(async (orderItem) => {
-                    await OrderItem.findByIdAndDelete(orderItem);
-                }));
-                return res.status(200).json({ success: true, message: 'the order is deleted!' });
-            } else {
-                return res.status(404).json({ success: false, message: 'order not found!' });
-            }
-        })
-        .catch((err) => {
-            return res.status(500).json({ success: false, error: err });
-        });
+exports.deleteOrder = async (req, res) => {
+    try {
+        const order = await Order.findByIdAndDelete(req.params.id);
+        if (order) {
+            return res.status(200).json({ success: true, message: 'the order is deleted!' });
+        } else {
+            return res.status(404).json({ success: false, message: 'order not found!' });
+        }
+    } catch (err) {
+        return res.status(500).json({ success: false, error: err });
+    }
 };

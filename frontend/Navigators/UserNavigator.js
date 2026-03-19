@@ -6,12 +6,13 @@ import Register from '../Screens/User/Register';
 import UserProfile from '../Screens/User/UserProfile';
 import EditProfile from '../Screens/User/EditProfile';
 import OrderDetails from '../Screens/User/OrderDetails';
+import { STACK_HEADER_STYLE } from '../assets/common/theme';
 
 const Stack = createStackNavigator();
 
 export default function UserNavigator() {
     return (
-        <Stack.Navigator>
+        <Stack.Navigator screenOptions={STACK_HEADER_STYLE}>
             <Stack.Screen 
                 name="Login"
                 component={Login}

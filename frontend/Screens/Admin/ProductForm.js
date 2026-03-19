@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Image, StyleSheet, TouchableOpacity, Platform, TextInput, Button, ScrollView } from "react-native";
+import { View, Text, Image, StyleSheet, TextInput, ScrollView, TouchableOpacity } from "react-native";
+import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from "expo-image-picker";
 import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import baseURL from "../../assets/common/baseurl";
+import { COLORS, SPACING, RADIUS, SHADOWS, COMMON_STYLES } from '../../assets/common/theme';
 
 const ProductForm = (props) => {
     const [pickerValue, setPickerValue] = useState("Unknown");
@@ -38,7 +40,6 @@ const ProductForm = (props) => {
 
         axios.get(`${baseURL}categories`).then((res) => {
              setCategories(res.data);
-             // Ensure we have a default category if editing or creating
              if (!props.route.params || res.data.length > 0) {
                  if(res.data.length > 0 && !props.route.params) {
                      setCategory(res.data[0]._id);
@@ -135,56 +136,143 @@ const ProductForm = (props) => {
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
-             <View style={styles.imageContainer}>
-                <Image style={styles.image} source={{ uri: mainImage ? mainImage : "https://fakeimg.pl/200x200/" }}/>
-                <Button title="Pick Photo" onPress={pickImage} />
-                <Button title="Use Camera" onPress={takePhoto} color="orange" />
-             </View>
-             
-             <TextInput style={styles.input} placeholder="Brand" value={brand} onChangeText={setBrand} />
-             <TextInput style={styles.input} placeholder="Name" value={name} onChangeText={setName} />
-             <TextInput style={styles.input} placeholder="Price" keyboardType={"numeric"} value={price} onChangeText={setPrice} />
-             <TextInput style={styles.input} placeholder="Stock Count" keyboardType={"numeric"} value={countInStock} onChangeText={setCountInStock} />
-             <TextInput style={styles.input} placeholder="Description" value={description} onChangeText={setDescription} />
+            {/* Image Section */}
+            <View style={styles.imageCard}>
+                <View style={styles.imageContainer}>
+                    <Image style={styles.image} source={{ uri: mainImage ? mainImage : "https://fakeimg.pl/200x200/" }}/>
+                </View>
+                <View style={styles.photoButtons}>
+                    <TouchableOpacity style={styles.photoButton} onPress={pickImage} activeOpacity={0.7}>
+                        <Ionicons name="image-outline" size={18} color={COLORS.primary} />
+                        <Text style={styles.photoButtonText}>Gallery</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.photoButton} onPress={takePhoto} activeOpacity={0.7}>
+                        <Ionicons name="camera-outline" size={18} color={COLORS.accent} />
+                        <Text style={[styles.photoButtonText, { color: COLORS.accent }]}>Camera</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
 
-             {error ? <Text style={{ color: "red", margin: 10 }}>{error}</Text> : null}
+            {/* Form */}
+            <View style={styles.formCard}>
+                <Text style={styles.label}>Brand</Text>
+                <TextInput style={styles.input} placeholder="Brand" placeholderTextColor={COLORS.textMuted} value={brand} onChangeText={setBrand} />
+                
+                <Text style={styles.label}>Name *</Text>
+                <TextInput style={styles.input} placeholder="Product name" placeholderTextColor={COLORS.textMuted} value={name} onChangeText={setName} />
+                
+                <Text style={styles.label}>Price *</Text>
+                <TextInput style={styles.input} placeholder="Price" placeholderTextColor={COLORS.textMuted} keyboardType={"numeric"} value={price} onChangeText={setPrice} />
+                
+                <Text style={styles.label}>Stock Count *</Text>
+                <TextInput style={styles.input} placeholder="Count in stock" placeholderTextColor={COLORS.textMuted} keyboardType={"numeric"} value={countInStock} onChangeText={setCountInStock} />
+                
+                <Text style={styles.label}>Description *</Text>
+                <TextInput style={[styles.input, { height: 80, textAlignVertical: 'top', paddingTop: SPACING.md }]} placeholder="Product description" placeholderTextColor={COLORS.textMuted} value={description} onChangeText={setDescription} multiline />
 
-             <Button title="Confirm" onPress={() => addProduct()} />
+                {error ? (
+                    <View style={styles.errorBanner}>
+                        <Ionicons name="alert-circle" size={16} color={COLORS.danger} />
+                        <Text style={styles.errorText}>{error}</Text>
+                    </View>
+                ) : null}
+
+                <TouchableOpacity
+                    style={[COMMON_STYLES.primaryButton, { marginTop: SPACING.lg }]}
+                    onPress={() => addProduct()}
+                    activeOpacity={0.7}
+                >
+                    <Text style={COMMON_STYLES.primaryButtonText}>
+                        {item ? 'Update Product' : 'Add Product'}
+                    </Text>
+                </TouchableOpacity>
+            </View>
         </ScrollView>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        alignItems: "center",
-        padding: 20
+        padding: SPACING.base,
+        backgroundColor: COLORS.background,
+    },
+    imageCard: {
+        backgroundColor: COLORS.white,
+        borderRadius: RADIUS.lg,
+        padding: SPACING.lg,
+        alignItems: 'center',
+        ...SHADOWS.medium,
+        marginBottom: SPACING.base,
     },
     imageContainer: {
-        width: 200,
-        height: 250,
-        borderStyle: "solid",
-        borderWidth: 8,
-        padding: 0,
-        justifyContent: "center",
-        borderRadius: 100,
-        borderColor: "#E0E0E0",
-        elevation: 10
+        width: 160,
+        height: 160,
+        borderRadius: RADIUS.lg,
+        overflow: 'hidden',
+        backgroundColor: COLORS.surfaceAlt,
+        marginBottom: SPACING.base,
     },
     image: {
-        width: "100%",
-        height: 150,
-        borderRadius: 100
+        width: '100%',
+        height: '100%',
+    },
+    photoButtons: {
+        flexDirection: 'row',
+        gap: SPACING.md,
+    },
+    photoButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingVertical: SPACING.sm,
+        paddingHorizontal: SPACING.base,
+        borderRadius: RADIUS.sm,
+        backgroundColor: COLORS.inputBg,
+        borderWidth: 1,
+        borderColor: COLORS.border,
+    },
+    photoButtonText: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: COLORS.primary,
+    },
+    formCard: {
+        backgroundColor: COLORS.white,
+        borderRadius: RADIUS.lg,
+        padding: SPACING.lg,
+        ...SHADOWS.medium,
+    },
+    label: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: COLORS.textMuted,
+        marginBottom: 6,
+        marginTop: SPACING.md,
     },
     input: {
-        width: "80%",
-        height: 60,
-        backgroundColor: "white",
-        margin: 10,
-        borderRadius: 20,
-        padding: 10,
-        borderWidth: 2,
-        borderColor: "orange"
-    }
+        height: 48,
+        backgroundColor: COLORS.inputBg,
+        borderRadius: RADIUS.md,
+        paddingHorizontal: SPACING.md,
+        borderWidth: 1.5,
+        borderColor: COLORS.inputBorder,
+        fontSize: 15,
+        color: COLORS.text,
+    },
+    errorBanner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        backgroundColor: COLORS.danger + '10',
+        padding: SPACING.md,
+        borderRadius: RADIUS.sm,
+        marginTop: SPACING.base,
+    },
+    errorText: {
+        color: COLORS.danger,
+        fontSize: 13,
+        fontWeight: '500',
+    },
 });
 
 export default ProductForm;

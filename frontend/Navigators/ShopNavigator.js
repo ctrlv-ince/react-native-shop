@@ -1,7 +1,7 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 
-import HomeScreen from '../Screens/Home/HomeScreen';
+import ProductContainer from '../Screens/Product/ProductContainer';
 import SingleProduct from '../Screens/Product/SingleProduct';
 import ReviewForm from '../Screens/Product/ReviewForm';
 import UserNavigator from './UserNavigator';
@@ -10,12 +10,12 @@ import { STACK_HEADER_STYLE } from '../assets/common/theme';
 
 const Stack = createStackNavigator();
 
-export default function HomeNavigator() {
+export default function ShopNavigator() {
     return (
         <Stack.Navigator screenOptions={STACK_HEADER_STYLE}>
             <Stack.Screen 
-                name="HomeScreen"
-                component={HomeScreen}
+                name="Products"
+                component={ProductContainer}
                 options={{
                     headerShown: false,
                 }}

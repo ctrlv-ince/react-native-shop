@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
 // Navigation
@@ -22,13 +23,16 @@ export default function App() {
   }, []);
 
   return (
+    <SafeAreaProvider>
     <AuthGlobal>
       <Provider store={store}>
         <NavigationContainer>
+        <StatusBar style="dark" />
         <DrawerNavigator />
         <Toast />
       </NavigationContainer>
     </Provider>
     </AuthGlobal>
+    </SafeAreaProvider>
   );
 }

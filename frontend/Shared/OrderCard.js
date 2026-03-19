@@ -1,30 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Button } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { updateOrderStatus } from '../Redux/Actions/orderActions';
+import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
+import { COLORS, SPACING, RADIUS, SHADOWS } from '../assets/common/theme';
 
 const OrderCard = (props) => {
     const dispatch = useDispatch();
     const [statusText, setStatusText] = useState('');
-    const [cardColor, setCardColor] = useState('#E74C3C');
+    const [statusColor, setStatusColor] = useState(COLORS.danger);
     const [statusChange, setStatusChange] = useState('');
 
     useEffect(() => {
         if (props.status === 'Delivered') {
             setStatusText('Delivered');
-            setCardColor('#2ECC71');
+            setStatusColor(COLORS.success);
         } else if (props.status === 'Shipped') {
             setStatusText('Shipped');
-            setCardColor('#F1C40F');
+            setStatusColor(COLORS.warning);
         } else {
             setStatusText('Pending');
-            setCardColor('#E74C3C');
+            setStatusColor(COLORS.danger);
         }
 
         return () => {
             setStatusText('');
-            setCardColor('');
+            setStatusColor('');
         };
     }, [props.status]);
 
@@ -48,53 +50,189 @@ const OrderCard = (props) => {
     };
 
     return (
-        <View style={[{ backgroundColor: cardColor }, styles.container]}>
-            <View style={styles.container}>
-                <Text>Order Number: #{props.id}</Text>
-            </View>
-            <View style={{ marginTop: 10 }}>
-                <Text>Status: {statusText}</Text>
-                <Text>Address: {props.shippingAddress1}</Text>
-                <Text>City: {props.city}</Text>
-                <Text>Country: {props.country}</Text>
-                <Text>Date Ordered: {props.dateOrdered.split('T')[0]}</Text>
-            </View>
-            <View style={styles.priceContainer}>
-                <Text>Price: </Text>
-                <Text style={styles.price}>$ {props.totalPrice}</Text>
-            </View>
-            {props.editMode ? (
-                <View style={{ marginTop: 20 }}>
-                    <Button title="Mark as Pending" color="#E74C3C" onPress={() => setStatusChange('Pending')} />
-                    <View style={{ marginBottom: 5 }}/>
-                    <Button title="Mark as Shipped" color="#F1C40F" onPress={() => setStatusChange('Shipped')} />
-                    <View style={{ marginBottom: 5 }}/>
-                    <Button title="Mark as Delivered" color="#2ECC71" onPress={() => setStatusChange('Delivered')} />
-                    <View style={{ marginBottom: 10 }}/>
-                    {statusChange ? <Text style={{ textAlign: 'center', fontWeight: 'bold' }}>Selected: {statusChange}</Text> : null}
-                    <View style={{ marginBottom: 5 }}/>
-                    <Button color="green" title="Update Order" onPress={() => updateOrder()} />
+        <View style={styles.container}>
+            {/* Status indicator bar */}
+            <View style={[styles.statusBar, { backgroundColor: statusColor }]} />
+            
+            <View style={styles.content}>
+                {/* Header */}
+                <View style={styles.headerRow}>
+                    <Text style={styles.orderId}>#{props.id?.slice(-6)}</Text>
+                    <View style={[styles.statusBadge, { backgroundColor: statusColor + '15' }]}>
+                        <Text style={[styles.statusBadgeText, { color: statusColor }]}>{statusText}</Text>
+                    </View>
                 </View>
-            ) : null}
+
+                {/* Details */}
+                <View style={styles.detailsSection}>
+                    <View style={styles.detailRow}>
+                        <Ionicons name="location-outline" size={14} color={COLORS.textMuted} />
+                        <Text style={styles.detailText}>{props.shippingAddress1}, {props.city}</Text>
+                    </View>
+                    <View style={styles.detailRow}>
+                        <Ionicons name="globe-outline" size={14} color={COLORS.textMuted} />
+                        <Text style={styles.detailText}>{props.country}</Text>
+                    </View>
+                    <View style={styles.detailRow}>
+                        <Ionicons name="calendar-outline" size={14} color={COLORS.textMuted} />
+                        <Text style={styles.detailText}>{props.dateOrdered.split('T')[0]}</Text>
+                    </View>
+                </View>
+
+                {/* Price */}
+                <View style={styles.priceRow}>
+                    <Text style={styles.priceLabel}>Total</Text>
+                    <Text style={styles.priceValue}>₱ {props.totalPrice}</Text>
+                </View>
+
+                {/* Admin Edit Mode */}
+                {props.editMode ? (
+                    <View style={styles.editSection}>
+                        <Text style={styles.editLabel}>Update Status</Text>
+                        <View style={styles.statusButtons}>
+                            {[
+                                { label: 'Pending', color: COLORS.danger },
+                                { label: 'Shipped', color: COLORS.warning },
+                                { label: 'Delivered', color: COLORS.success },
+                            ].map(s => (
+                                <TouchableOpacity
+                                    key={s.label}
+                                    style={[
+                                        styles.statusBtn,
+                                        { borderColor: s.color },
+                                        statusChange === s.label && { backgroundColor: s.color }
+                                    ]}
+                                    onPress={() => setStatusChange(s.label)}
+                                    activeOpacity={0.7}
+                                >
+                                    <Text style={[
+                                        styles.statusBtnText,
+                                        { color: s.color },
+                                        statusChange === s.label && { color: COLORS.white }
+                                    ]}>{s.label}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                        <TouchableOpacity
+                            style={[styles.updateBtn, !statusChange && { opacity: 0.5 }]}
+                            onPress={() => updateOrder()}
+                            activeOpacity={0.7}
+                            disabled={!statusChange}
+                        >
+                            <Text style={styles.updateBtnText}>Update Order</Text>
+                        </TouchableOpacity>
+                    </View>
+                ) : null}
+            </View>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        padding: 20,
-        margin: 10,
-        borderRadius: 10
+        backgroundColor: COLORS.white,
+        borderRadius: RADIUS.lg,
+        margin: SPACING.sm,
+        flexDirection: 'row',
+        overflow: 'hidden',
+        ...SHADOWS.medium,
     },
-    priceContainer: {
-        marginTop: 10,
-        alignSelf: 'flex-end',
-        flexDirection: 'row'
+    statusBar: {
+        width: 4,
     },
-    price: {
-        color: 'white',
-        fontWeight: 'bold'
-    }
+    content: {
+        flex: 1,
+        padding: SPACING.base,
+    },
+    headerRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: SPACING.md,
+    },
+    orderId: {
+        fontSize: 16,
+        fontWeight: '800',
+        color: COLORS.text,
+    },
+    statusBadge: {
+        paddingHorizontal: SPACING.md,
+        paddingVertical: 4,
+        borderRadius: RADIUS.xl,
+    },
+    statusBadgeText: {
+        fontSize: 12,
+        fontWeight: '700',
+    },
+    detailsSection: {
+        gap: 6,
+        marginBottom: SPACING.md,
+    },
+    detailRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    detailText: {
+        fontSize: 13,
+        color: COLORS.textMuted,
+    },
+    priceRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingTop: SPACING.sm,
+        borderTopWidth: 1,
+        borderColor: COLORS.border,
+    },
+    priceLabel: {
+        fontSize: 14,
+        color: COLORS.textMuted,
+    },
+    priceValue: {
+        fontSize: 18,
+        fontWeight: '800',
+        color: COLORS.primary,
+    },
+    editSection: {
+        marginTop: SPACING.base,
+        paddingTop: SPACING.base,
+        borderTopWidth: 1,
+        borderColor: COLORS.border,
+    },
+    editLabel: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: COLORS.textMuted,
+        marginBottom: SPACING.sm,
+    },
+    statusButtons: {
+        flexDirection: 'row',
+        gap: 8,
+        marginBottom: SPACING.md,
+    },
+    statusBtn: {
+        flex: 1,
+        paddingVertical: 8,
+        borderRadius: RADIUS.sm,
+        borderWidth: 1.5,
+        alignItems: 'center',
+    },
+    statusBtnText: {
+        fontSize: 12,
+        fontWeight: '700',
+    },
+    updateBtn: {
+        backgroundColor: COLORS.primary,
+        paddingVertical: SPACING.md,
+        borderRadius: RADIUS.md,
+        alignItems: 'center',
+    },
+    updateBtnText: {
+        color: COLORS.white,
+        fontSize: 14,
+        fontWeight: '700',
+    },
 });
 
 export default OrderCard;

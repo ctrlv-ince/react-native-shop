@@ -1,8 +1,10 @@
 import React, { useState, useCallback } from "react";
-import { View, Text, FlatList, Button, StyleSheet } from "react-native";
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+import { Ionicons } from '@expo/vector-icons';
 import axios from "axios";
 import baseURL from "../../assets/common/baseurl";
+import { COLORS, SPACING, RADIUS, SHADOWS, COMMON_STYLES } from '../../assets/common/theme';
 
 const Products = (props) => {
     const [productList, setProductList] = useState();
@@ -38,28 +40,55 @@ const Products = (props) => {
             .catch((error) => console.log(error));
     };
 
+    if (loading) return (
+        <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+            <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
+    );
+
     return (
         <View style={styles.container}>
-            <View style={styles.buttonContainer}>
-                <Button title="Add New Product" onPress={() => props.navigation.navigate("ProductForm")} color="green"/>
-            </View>
+            <TouchableOpacity 
+                style={styles.addButton}
+                onPress={() => props.navigation.navigate("ProductForm")}
+                activeOpacity={0.7}
+            >
+                <Ionicons name="add-circle-outline" size={20} color={COLORS.white} />
+                <Text style={styles.addButtonText}>Add New Product</Text>
+            </TouchableOpacity>
+
             <FlatList
                 data={productList}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
-                    <View style={styles.item}>
-                        <Text style={styles.itemText}>{item.name}</Text>
-                        <View style={{flexDirection: 'column'}}>
-                           <View style={{flexDirection: 'row', marginBottom: 5}}>
-                               <Button title="Edit" onPress={() => props.navigation.navigate("ProductForm", { item })}/>
-                               <View style={{width: 5}}/>
-                               <Button title="Promo" color="orange" onPress={() => sendPromo(item.id)} />
-                               <View style={{width: 5}}/>
-                               <Button title="Delete" color="red" onPress={() => deleteProduct(item.id)} />
-                           </View>
+                    <View style={styles.productCard}>
+                        <Text style={styles.productName} numberOfLines={1}>{item.name}</Text>
+                        <View style={styles.actionRow}>
+                            <TouchableOpacity 
+                                style={[styles.actionBtn, { backgroundColor: COLORS.primaryLight }]}
+                                onPress={() => props.navigation.navigate("ProductForm", { item })}
+                                activeOpacity={0.7}
+                            >
+                                <Ionicons name="create-outline" size={16} color={COLORS.primary} />
+                            </TouchableOpacity>
+                            <TouchableOpacity 
+                                style={[styles.actionBtn, { backgroundColor: COLORS.warning + '15' }]}
+                                onPress={() => sendPromo(item.id)}
+                                activeOpacity={0.7}
+                            >
+                                <Ionicons name="megaphone-outline" size={16} color={COLORS.warning} />
+                            </TouchableOpacity>
+                            <TouchableOpacity 
+                                style={[styles.actionBtn, { backgroundColor: COLORS.danger + '10' }]}
+                                onPress={() => deleteProduct(item.id)}
+                                activeOpacity={0.7}
+                            >
+                                <Ionicons name="trash-outline" size={16} color={COLORS.danger} />
+                            </TouchableOpacity>
                         </View>
                     </View>
                 )}
+                contentContainerStyle={{ paddingBottom: 20 }}
             />
         </View>
     );
@@ -68,23 +97,53 @@ const Products = (props) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 10
+        backgroundColor: COLORS.background,
+        padding: SPACING.base,
     },
-    buttonContainer: {
-        margin: 20,
-        alignSelf: "center",
+    addButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        backgroundColor: COLORS.primary,
+        paddingVertical: SPACING.md,
+        borderRadius: RADIUS.md,
+        marginBottom: SPACING.base,
+        ...SHADOWS.medium,
     },
-    item: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        padding: 15,
-        borderBottomWidth: 1,
-        borderColor: "gray"
+    addButtonText: {
+        color: COLORS.white,
+        fontSize: 15,
+        fontWeight: '700',
     },
-    itemText: {
-        fontSize: 16,
-        fontWeight: "bold"
-    }
+    productCard: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: COLORS.white,
+        padding: SPACING.base,
+        borderRadius: RADIUS.md,
+        marginBottom: SPACING.sm,
+        ...SHADOWS.small,
+    },
+    productName: {
+        fontSize: 15,
+        fontWeight: '700',
+        color: COLORS.text,
+        flex: 1,
+        marginRight: SPACING.md,
+    },
+    actionRow: {
+        flexDirection: 'row',
+        gap: 8,
+    },
+    actionBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: RADIUS.sm,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 });
 
 export default Products;

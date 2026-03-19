@@ -1,10 +1,12 @@
 import React from 'react';
-import { View, StyleSheet, Dimensions, ScrollView, Button, Text } from 'react-native';
+import { View, StyleSheet, Dimensions, ScrollView, Text, TouchableOpacity } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { clearCart } from '../../Redux/Actions/cartActions';
+import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 import axios from 'axios';
 import baseURL from '../../assets/common/baseurl';
+import { COLORS, SPACING, RADIUS, SHADOWS, COMMON_STYLES } from '../../assets/common/theme';
 
 var { width, height } = Dimensions.get('window');
 
@@ -43,66 +45,97 @@ const Confirm = (props) => {
     };
 
     return (
-        <ScrollView contentContainerStyle={styles.container}>
-            <View style={styles.titleContainer}>
-                <Text style={{ fontSize: 20, fontWeight: 'bold' }}>Confirm Order</Text>
-                {props.route.params ? (
-                    <View style={{ borderWidth: 1, borderColor: 'orange', padding: 10, marginTop: 20 }}>
-                        <Text style={styles.title}>Shipping to:</Text>
-                        <View style={{ padding: 8 }}>
-                        <Text>Address: {finalOrder.shippingAddress1}</Text>
-                            <Text>Address2: {finalOrder.shippingAddress2}</Text>
-                            <Text>City: {finalOrder.city}</Text>
-                            <Text>Zip Code: {finalOrder.zip}</Text>
-                            <Text>Country: {finalOrder.country}</Text>
-                        </View>
-                        <Text style={styles.title}>Items:</Text>
-                        {finalOrder.orderItems.map((x) => {
-                            return (
-                                <View style={styles.listItem} key={x.product ? x.product : Math.random()}>
-                                    <View>
-                                        <Text>Product ID: {x.product || x.id}</Text>
-                                    </View>
-                                    <Text>Price: {x.price}</Text>
-                                    <Text>Quantity: {x.quantity}</Text>
-                                </View>
-                            );
-                        })}
-                    </View>
-                ) : null}
-                <View style={{ alignItems: 'center', margin: 20 }}>
-                    <Button title={'Place order'} onPress={confirmOrder} />
+        <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+            {/* Shipping Card */}
+            <View style={styles.card}>
+                <View style={styles.cardHeader}>
+                    <Ionicons name="location-outline" size={20} color={COLORS.primary} />
+                    <Text style={styles.cardTitle}>Shipping Address</Text>
+                </View>
+                <View style={styles.addressBlock}>
+                    <Text style={styles.addressText}>{finalOrder.shippingAddress1}</Text>
+                    {finalOrder.shippingAddress2 ? <Text style={styles.addressText}>{finalOrder.shippingAddress2}</Text> : null}
+                    <Text style={styles.addressText}>{finalOrder.city}, {finalOrder.zip}</Text>
+                    <Text style={styles.addressText}>{finalOrder.country}</Text>
                 </View>
             </View>
+
+            {/* Items Card */}
+            <View style={styles.card}>
+                <View style={styles.cardHeader}>
+                    <Ionicons name="bag-outline" size={20} color={COLORS.primary} />
+                    <Text style={styles.cardTitle}>Order Items</Text>
+                </View>
+                {finalOrder.orderItems.map((x) => (
+                    <View style={styles.itemRow} key={x.product ? x.product : Math.random()}>
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.itemId}>Product: {x.product || x.id}</Text>
+                        </View>
+                        <Text style={styles.itemQty}>x{x.quantity}</Text>
+                    </View>
+                ))}
+            </View>
+
+            {/* Place Order */}
+            <TouchableOpacity
+                style={[COMMON_STYLES.primaryButton, { marginTop: SPACING.sm }]}
+                onPress={confirmOrder}
+                activeOpacity={0.7}
+            >
+                <Text style={COMMON_STYLES.primaryButtonText}>Place Order</Text>
+            </TouchableOpacity>
         </ScrollView>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        height: height,
-        padding: 8,
-        alignContent: 'center',
-        backgroundColor: 'white'
+        padding: SPACING.base,
+        backgroundColor: COLORS.background,
     },
-    titleContainer: {
-        justifyContent: 'center',
+    card: {
+        backgroundColor: COLORS.white,
+        borderRadius: RADIUS.lg,
+        padding: SPACING.lg,
+        marginBottom: SPACING.md,
+        ...SHADOWS.medium,
+    },
+    cardHeader: {
+        flexDirection: 'row',
         alignItems: 'center',
-        margin: 8
+        gap: 8,
+        marginBottom: SPACING.base,
     },
-    title: {
-        alignSelf: 'center',
-        margin: 8,
-        fontSize: 16,
-        fontWeight: 'bold'
+    cardTitle: {
+        fontSize: 17,
+        fontWeight: '700',
+        color: COLORS.text,
     },
-    listItem: {
+    addressBlock: {
+        paddingLeft: 28,
+    },
+    addressText: {
+        fontSize: 14,
+        color: COLORS.textMuted,
+        lineHeight: 22,
+    },
+    itemRow: {
+        flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'white',
-        justifyContent: 'center',
-        width: width / 1.2,
-        padding: 5
-    }
+        justifyContent: 'space-between',
+        paddingVertical: SPACING.sm,
+        borderBottomWidth: 1,
+        borderColor: COLORS.border,
+    },
+    itemId: {
+        fontSize: 13,
+        color: COLORS.text,
+    },
+    itemQty: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: COLORS.primary,
+    },
 });
 
 export default Confirm;

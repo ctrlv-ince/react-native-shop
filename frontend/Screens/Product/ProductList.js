@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { addToCart } from '../../Redux/Actions/cartActions';
 import Toast from 'react-native-toast-message';
 import ProductCard from './ProductCard';
+import { COLORS } from '../../assets/common/theme';
 
 const { width } = Dimensions.get('window');
 
@@ -12,19 +13,18 @@ const ProductList = (props) => {
     const dispatch = useDispatch();
     return (
         <TouchableOpacity 
-            style={{ width: '50%' }}
+            style={{ width: '50%', alignItems: 'center' }}
             onPress={() => props.navigation.navigate("Product Detail", { item: item })}
+            activeOpacity={0.7}
         >
-            <View style={{ width: width / 2, backgroundColor: 'gainsboro' }}>
-                <ProductCard {...item} onPress={() => {
-                    dispatch(addToCart(item));
-                    Toast.show({
-                        topOffset: 60,
-                        type: 'success',
-                        text1: `${item.name} added to Cart`
-                    });
-                }} />
-            </View>
+            <ProductCard {...item} onPress={() => {
+                dispatch(addToCart(item));
+                Toast.show({
+                    topOffset: 60,
+                    type: 'success',
+                    text1: `${item.name} added to Cart`
+                });
+            }} />
         </TouchableOpacity>
     );
 };

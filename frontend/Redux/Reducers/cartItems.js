@@ -6,10 +6,13 @@ const cartItems = (state = [], action) => {
             return action.payload;
         case ADD_TO_CART:
             const exists = state.find((x) => x.id === action.payload.id);
+            const qtyToAdd = action.payload.quantityToAdd || 1;
             if (exists) {
-                 return state.map(x => x.id === action.payload.id ? { ...x, quantity: x.quantity + 1 } : x);
+                 return state.map(x => x.id === action.payload.id ? { ...x, quantity: x.quantity + qtyToAdd } : x);
             }
-            return [...state, { ...action.payload, quantity: 1 }];
+            return [...state, { ...action.payload, quantity: qtyToAdd }];
+        case 'UPDATE_CART_QTY':
+            return state.map(x => x.id === action.payload.id ? { ...x, quantity: action.payload.quantity } : x);
         case REMOVE_FROM_CART:
             return state.filter(cartItem => cartItem.id !== action.payload.id);
         case CLEAR_CART:

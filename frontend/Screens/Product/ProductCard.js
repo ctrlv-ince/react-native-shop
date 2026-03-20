@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View, Dimensions, Image, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, RADIUS, SHADOWS } from '../../assets/common/theme';
@@ -8,6 +8,7 @@ const CARD_WIDTH = width / 2 - 24;
 
 const ProductCard = (props) => {
     const { name, price, images, stock, onPress } = props;
+    const [qty, setQty] = useState(1);
     const imageUrl = images?.[0]?.url;
 
     return (
@@ -26,10 +27,25 @@ const ProductCard = (props) => {
                 <Text style={styles.price}>₱{price}</Text>
 
                 {stock > 0 ? (
-                    <TouchableOpacity style={styles.addButton} onPress={onPress} activeOpacity={0.7}>
-                        <Ionicons name="cart-outline" size={16} color={COLORS.white} />
-                        <Text style={styles.addButtonText}>Add</Text>
-                    </TouchableOpacity>
+                    <View style={styles.actionRow}>
+                        <View style={styles.stepperContainer}>
+                            <TouchableOpacity onPress={() => setQty(Math.max(1, qty - 1))} style={styles.stepperButton}>
+                                <Ionicons name="remove" size={14} color={COLORS.primary} />
+                            </TouchableOpacity>
+                            <Text style={styles.stepperValue}>{qty}</Text>
+                            <TouchableOpacity onPress={() => setQty(Math.min(stock, qty + 1))} style={styles.stepperButton}>
+                                <Ionicons name="add" size={14} color={COLORS.primary} />
+                            </TouchableOpacity>
+                        </View>
+                        <TouchableOpacity 
+                            style={styles.addButton} 
+                            onPress={() => { onPress(qty); setQty(1); }} 
+                            activeOpacity={0.7}
+                        >
+                            <Ionicons name="cart-outline" size={16} color={COLORS.white} />
+                            <Text style={styles.addButtonText}>Add</Text>
+                        </TouchableOpacity>
+                    </View>
                 ) : (
                     <View style={styles.unavailableBadge}>
                         <Text style={styles.unavailableText}>Out of Stock</Text>
@@ -78,18 +94,46 @@ const styles = StyleSheet.create({
         color: COLORS.primary,
         marginBottom: SPACING.sm,
     },
+    actionRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 6,
+    },
+    stepperContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: COLORS.inputBg,
+        borderRadius: RADIUS.sm,
+        borderWidth: 1,
+        borderColor: COLORS.border,
+        height: 32,
+    },
+    stepperButton: {
+        paddingHorizontal: 8,
+        height: '100%',
+        justifyContent: 'center',
+    },
+    stepperValue: {
+        fontSize: 13,
+        fontWeight: '700',
+        color: COLORS.text,
+    },
     addButton: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: COLORS.primary,
-        paddingVertical: 8,
+        height: 32,
+        paddingHorizontal: 10,
         borderRadius: RADIUS.sm,
-        gap: 6,
+        gap: 4,
     },
     addButtonText: {
         color: COLORS.white,
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: '700',
     },
     unavailableBadge: {

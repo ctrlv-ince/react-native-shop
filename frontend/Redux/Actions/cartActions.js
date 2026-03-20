@@ -1,12 +1,22 @@
 import { ADD_TO_CART, REMOVE_FROM_CART, CLEAR_CART, LOAD_CART } from '../constants';
 import * as DB from '../../Shared/Database';
 
-export const addToCart = (payload) => {
+export const addToCart = (payload, cartQuantity = 1) => {
     return async (dispatch) => {
-        await DB.insertCartItem(payload);
+        await DB.insertCartItem(payload, cartQuantity);
         dispatch({
             type: ADD_TO_CART,
-            payload
+            payload: { ...payload, quantityToAdd: cartQuantity }
+        });
+    }
+}
+
+export const updateCartQty = (id, quantity) => {
+    return async (dispatch) => {
+        await DB.updateCartItemQty(id, quantity);
+        dispatch({
+            type: 'UPDATE_CART_QTY',
+            payload: { id, quantity }
         });
     }
 }

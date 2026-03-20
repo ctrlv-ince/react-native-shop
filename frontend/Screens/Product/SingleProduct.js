@@ -13,6 +13,7 @@ import { AuthContext } from '../../Context/Store/AuthGlobal';
 
 const SingleProduct = (props) => {
     const [item, setItem] = useState(props.route.params.item);
+    const [quantity, setQuantity] = useState(1);
     const dispatch = useDispatch();
     const context = useContext(AuthContext);
     const { reviews, loading: reviewsLoading } = useSelector(state => state.reviewsState);
@@ -116,6 +117,26 @@ const SingleProduct = (props) => {
                     <Text style={styles.priceLabel}>Price</Text>
                     <Text style={styles.price}>₱ {item.price}</Text>
                 </View>
+
+                {/* Quantity Stepper */}
+                <View style={styles.stepperContainer}>
+                    <TouchableOpacity 
+                        style={styles.stepperButton}
+                        onPress={() => setQuantity(Math.max(1, quantity - 1))}
+                        disabled={item.stock <= 0}
+                    >
+                        <Ionicons name="remove" size={18} color={item.stock <= 0 ? COLORS.textLight : COLORS.primary} />
+                    </TouchableOpacity>
+                    <Text style={styles.stepperValue}>{quantity}</Text>
+                    <TouchableOpacity 
+                        style={styles.stepperButton}
+                        onPress={() => setQuantity(Math.min(item.stock, quantity + 1))}
+                        disabled={item.stock <= 0}
+                    >
+                        <Ionicons name="add" size={18} color={item.stock <= 0 ? COLORS.textLight : COLORS.primary} />
+                    </TouchableOpacity>
+                </View>
+
                 <TouchableOpacity 
                     style={[
                         styles.addToCartButton,
@@ -131,18 +152,19 @@ const SingleProduct = (props) => {
                             });
                             return;
                         }
-                        dispatch(addToCart(item));
+                        dispatch(addToCart(item, quantity));
                         Toast.show({
                             topOffset: 60,
                             type: 'success',
-                            text1: `${item.name} added to Cart`
+                            text1: `${quantity} ${item.name} added to Cart`
                         });
+                        setQuantity(1); // Reset after adding
                     }}
                     activeOpacity={0.7}
                     disabled={item.stock <= 0}
                 >
                     <Ionicons name="cart-outline" size={20} color={COLORS.white} />
-                    <Text style={styles.addToCartText}>Add to Cart</Text>
+                    <Text style={styles.addToCartText}>Add</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -311,7 +333,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: COLORS.primary,
         paddingVertical: SPACING.md,
-        paddingHorizontal: SPACING.xl,
+        paddingHorizontal: SPACING.lg,
         borderRadius: RADIUS.md,
         gap: 8,
     },
@@ -319,6 +341,28 @@ const styles = StyleSheet.create({
         color: COLORS.white,
         fontSize: 15,
         fontWeight: '700',
+    },
+    stepperContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: COLORS.inputBg,
+        borderRadius: RADIUS.md,
+        borderWidth: 1,
+        borderColor: COLORS.border,
+        height: 48,
+        paddingHorizontal: 4,
+    },
+    stepperButton: {
+        padding: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    stepperValue: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: COLORS.text,
+        minWidth: 32,
+        textAlign: 'center',
     },
 });
 

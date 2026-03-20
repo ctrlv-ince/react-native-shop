@@ -19,7 +19,7 @@ const ProductList = (props) => {
             onPress={() => props.navigation.navigate("Product Detail", { item: item })}
             activeOpacity={0.7}
         >
-            <ProductCard {...item} onPress={() => {
+            <ProductCard {...item} onPress={(qty = 1) => {
                 if (!context.stateUser.isAuthenticated) {
                     Toast.show({
                         topOffset: 60,
@@ -28,11 +28,11 @@ const ProductList = (props) => {
                     });
                     return;
                 }
-                dispatch(addToCart(item));
+                dispatch(addToCart(item, qty));
                 Toast.show({
                     topOffset: 60,
                     type: 'success',
-                    text1: `${item.name} added to Cart`
+                    text1: `${qty} ${item.name} added to Cart`
                 });
             }} />
         </TouchableOpacity>

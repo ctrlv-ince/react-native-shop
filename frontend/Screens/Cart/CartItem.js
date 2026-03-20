@@ -1,9 +1,23 @@
 import React from 'react';
-import { StyleSheet, View, Text, Image } from 'react-native';
+import { StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
+import { useDispatch } from 'react-redux';
+import { updateCartQty, removeFromCart } from '../../Redux/Actions/cartActions';
+import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, RADIUS } from '../../assets/common/theme';
 
 const CartItem = (props) => {
     const data = props.item;
+    const dispatch = useDispatch();
+
+    const handleUpdateQty = (change) => {
+        const newQty = data.quantity + change;
+        if (newQty > 0) {
+            dispatch(updateCartQty(data.id, newQty));
+        } else {
+            dispatch(removeFromCart(data));
+        }
+    };
+
     return (
         <View style={styles.body}>
             <Image 
@@ -12,12 +26,20 @@ const CartItem = (props) => {
             />
             <View style={styles.info}>
                 <Text style={styles.name} numberOfLines={1}>{data.name}</Text>
-                <View style={styles.priceRow}>
-                    <Text style={styles.price}>₱{data.price}</Text>
-                    <Text style={styles.quantity}>x {data.quantity}</Text>
-                </View>
+                <Text style={styles.price}>₱{data.price}</Text>
             </View>
-            <Text style={styles.subtotal}>₱{(data.price * data.quantity).toFixed(2)}</Text>
+            <View style={styles.controls}>
+                <View style={styles.stepperContainer}>
+                    <TouchableOpacity onPress={() => handleUpdateQty(-1)} style={styles.stepperBtn} activeOpacity={0.7}>
+                        <Ionicons name="remove" size={16} color={COLORS.primary} />
+                    </TouchableOpacity>
+                    <Text style={styles.stepperText}>{data.quantity}</Text>
+                    <TouchableOpacity onPress={() => handleUpdateQty(1)} style={styles.stepperBtn} activeOpacity={0.7}>
+                        <Ionicons name="add" size={16} color={COLORS.primary} />
+                    </TouchableOpacity>
+                </View>
+                <Text style={styles.subtotal}>₱{(data.price * data.quantity).toFixed(2)}</Text>
+            </View>
         </View>
     );
 };
@@ -43,6 +65,7 @@ const styles = StyleSheet.create({
     },
     info: {
         flex: 1,
+        justifyContent: 'center',
     },
     name: {
         fontWeight: '700',
@@ -50,23 +73,35 @@ const styles = StyleSheet.create({
         color: COLORS.text,
         marginBottom: 4,
     },
-    priceRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-    },
     price: {
         fontSize: 14,
         color: COLORS.primary,
         fontWeight: '600',
     },
-    quantity: {
-        fontSize: 13,
-        color: COLORS.textMuted,
+    controls: {
+        alignItems: 'flex-end',
+        gap: 6,
+    },
+    stepperContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: COLORS.surfaceAlt,
+        borderRadius: RADIUS.sm,
+        paddingHorizontal: 2,
+    },
+    stepperBtn: {
+        padding: 6,
+    },
+    stepperText: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: COLORS.text,
+        minWidth: 24,
+        textAlign: 'center',
     },
     subtotal: {
         fontSize: 15,
-        fontWeight: '700',
+        fontWeight: '800',
         color: COLORS.text,
     },
 });

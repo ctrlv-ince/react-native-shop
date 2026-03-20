@@ -32,21 +32,30 @@ export const fetchCartItems = async () => {
     }
 };
 
-export const insertCartItem = async (item) => {
+export const insertCartItem = async (item, quantityToAdd = 1) => {
     if (!db) await initDb();
     try {
         // check if exists
         const exists = await db.getFirstAsync('SELECT * FROM Cart WHERE productId = ?', [item.id]);
         if (exists) {
-            await db.runAsync('UPDATE Cart SET quantity = quantity + 1 WHERE productId = ?', [item.id]);
+            await db.runAsync('UPDATE Cart SET quantity = quantity + ? WHERE productId = ?', [quantityToAdd, item.id]);
         } else {
             await db.runAsync(
                 'INSERT INTO Cart (productId, name, price, image, quantity) VALUES (?, ?, ?, ?, ?)',
-                [item.id, item.name, item.price, item.images?.[0]?.url || item.image || '', 1]
+                [item.id, item.name, item.price, item.images?.[0]?.url || item.image || '', quantityToAdd]
             );
         }
     } catch (error) {
         console.error('Error inserting item', error);
+    }
+};
+
+export const updateCartItemQty = async (productId, newQuantity) => {
+    if (!db) await initDb();
+    try {
+        await db.runAsync('UPDATE Cart SET quantity = ? WHERE productId = ?', [newQuantity, productId]);
+    } catch (error) {
+        console.error('Error updating item quantity', error);
     }
 };
 

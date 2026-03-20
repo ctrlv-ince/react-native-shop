@@ -12,6 +12,11 @@ const OrderCard = (props) => {
     const [statusColor, setStatusColor] = useState(COLORS.danger);
     const [statusChange, setStatusChange] = useState('');
 
+    // Compute total price from order items
+    const totalPrice = props.orderItems?.reduce((sum, item) => {
+        return sum + (item.price * item.quantity);
+    }, 0) || 0;
+
     useEffect(() => {
         if (props.status === 'Delivered') {
             setStatusText('Delivered');
@@ -65,24 +70,26 @@ const OrderCard = (props) => {
 
                 {/* Details */}
                 <View style={styles.detailsSection}>
-                    <View style={styles.detailRow}>
-                        <Ionicons name="location-outline" size={14} color={COLORS.textMuted} />
-                        <Text style={styles.detailText}>{props.shippingAddress1}, {props.city}</Text>
-                    </View>
-                    <View style={styles.detailRow}>
-                        <Ionicons name="globe-outline" size={14} color={COLORS.textMuted} />
-                        <Text style={styles.detailText}>{props.country}</Text>
-                    </View>
+                    {props.user?.name && (
+                        <View style={styles.detailRow}>
+                            <Ionicons name="person-outline" size={14} color={COLORS.textMuted} />
+                            <Text style={styles.detailText}>{props.user.name}</Text>
+                        </View>
+                    )}
                     <View style={styles.detailRow}>
                         <Ionicons name="calendar-outline" size={14} color={COLORS.textMuted} />
-                        <Text style={styles.detailText}>{props.dateOrdered.split('T')[0]}</Text>
+                        <Text style={styles.detailText}>{props.dateOrdered?.split('T')[0]}</Text>
+                    </View>
+                    <View style={styles.detailRow}>
+                        <Ionicons name="cube-outline" size={14} color={COLORS.textMuted} />
+                        <Text style={styles.detailText}>{props.orderItems?.length || 0} item(s)</Text>
                     </View>
                 </View>
 
                 {/* Price */}
                 <View style={styles.priceRow}>
                     <Text style={styles.priceLabel}>Total</Text>
-                    <Text style={styles.priceValue}>₱ {props.totalPrice}</Text>
+                    <Text style={styles.priceValue}>₱ {totalPrice.toLocaleString()}</Text>
                 </View>
 
                 {/* Admin Edit Mode */}

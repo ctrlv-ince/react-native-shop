@@ -29,33 +29,22 @@ exports.getOrderById = async (req, res) => {
 };
 
 exports.createOrder = async (req, res) => {
-    // Build order items array directly (no separate OrderItem collection)
-    const orderItems = req.body.orderItems.map(item => ({
-        quantity: item.quantity,
-        product: item.product
-    }));
-
-    // Calculate total price
-    const totalPrices = await Promise.all(
-        orderItems.map(async (item) => {
+    // Build order items with price looked up from the Product model
+    const orderItems = await Promise.all(
+        req.body.orderItems.map(async (item) => {
             const product = await Product.findById(item.product).select('price');
-            if (!product) return 0;
-            return product.price * item.quantity;
+            if (!product) throw new Error(`Product not found: ${item.product}`);
+            return {
+                quantity: item.quantity,
+                product: item.product,
+                price: product.price,
+            };
         })
     );
 
-    const totalPrice = totalPrices.reduce((a, b) => a + b, 0);
-
     let order = new Order({
         orderItems: orderItems,
-        shippingAddress1: req.body.shippingAddress1,
-        shippingAddress2: req.body.shippingAddress2,
-        city: req.body.city,
-        zip: req.body.zip,
-        country: req.body.country,
-        phone: req.body.phone,
-        status: req.body.status,
-        totalPrice: totalPrice,
+        status: req.body.status || 'Pending',
         user: req.body.user,
     });
     order = await order.save();

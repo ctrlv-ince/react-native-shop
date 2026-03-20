@@ -5,10 +5,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SHADOWS } from '../assets/common/theme';
 
 import Dashboard from '../Screens/Admin/Dashboard';
-import AdminNavigator from './AdminNavigator'; // Has Products & Orders (but we'll just label it Products)
+import AdminNavigator from './AdminNavigator';
 import CategoryNavigator from './CategoryNavigator';
+import Orders from '../Screens/Admin/Orders';
 import Users from '../Screens/Admin/Users';
-import UserNavigator from './UserNavigator'; // For admin to see their own profile / log out
+import UserNavigator from './UserNavigator';
 
 const Tab = createBottomTabNavigator();
 
@@ -29,7 +30,7 @@ export default function AdminMain() {
                 tabBarActiveTintColor: COLORS.primary,
                 tabBarInactiveTintColor: COLORS.tabInactive,
                 tabBarLabelStyle: {
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: '600',
                 },
             }}
@@ -52,6 +53,18 @@ export default function AdminMain() {
                         <Ionicons name="cube" size={size} color={color} />
                     ),
                     tabBarLabel: 'Products',
+                }}
+            />
+            <Tab.Screen 
+                name="OrdersTab" 
+                component={Orders}
+                options={{
+                    headerShown: true,
+                    headerTitle: 'Manage Orders',
+                    tabBarIcon: ({ color, size }) => (
+                        <Ionicons name="receipt" size={size} color={color} />
+                    ),
+                    tabBarLabel: 'Orders',
                 }}
             />
             <Tab.Screen 

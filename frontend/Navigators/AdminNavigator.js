@@ -3,7 +3,6 @@ import { createStackNavigator } from "@react-navigation/stack";
 
 import Products from "../Screens/Admin/Products";
 import ProductForm from "../Screens/Admin/ProductForm";
-import Orders from "../Screens/Admin/Orders";
 import { STACK_HEADER_STYLE } from '../assets/common/theme';
 
 const Stack = createStackNavigator();
@@ -25,13 +24,7 @@ export default function AdminNavigator() {
                     title: "Product Form"
                 }}
             />
-            <Stack.Screen 
-                name="Orders"
-                component={Orders}
-                options={{
-                    title: "Manage Orders"
-                }}
-            />
         </Stack.Navigator>
     );
 }
+

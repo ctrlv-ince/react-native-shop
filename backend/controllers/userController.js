@@ -127,3 +127,44 @@ exports.updateUser = async (req, res) => {
         return res.status(500).json({ message: 'Server error during update', error: err.message });
     }
 };
+
+exports.googleLogin = async (req, res) => {
+    try {
+        const { email, name, photo } = req.body;
+        const secret = process.env.SECRET;
+
+        if (!email) {
+            return res.status(400).json({ message: 'Email is required for Google Login' });
+        }
+
+        let user = await User.findOne({ email: email });
+
+        if (!user) {
+            // Auto-register user if they don't exist
+            user = new User({
+                name: name || 'Google User',
+                email: email,
+                passwordHash: bcrypt.hashSync(Math.random().toString(36).slice(-8), 10), // Random secure password
+                phone: '',
+                isAdmin: false,
+                address: '',
+                pushToken: '',
+                photo: photo || '',
+            });
+            user = await user.save();
+        }
+
+        const token = jwt.sign(
+            {
+                userId: user.id,
+                isAdmin: user.isAdmin
+            },
+            secret,
+            { expiresIn: '1d' }
+        );
+
+        res.status(200).send({ user: user.email, token: token, userId: user.id, pushToken: user.pushToken });
+    } catch (err) {
+        return res.status(500).json({ message: 'Server error during Google login', error: err.message });
+    }
+};

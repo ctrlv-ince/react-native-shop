@@ -18,4 +18,7 @@ router.post('/login', userController.loginUser);
 // Update user profile (with optional avatar upload via Cloudinary)
 router.put('/:id', upload.single('photo'), userController.updateUser);
 
+// Google login
+router.post('/google-login', userController.googleLogin);
+
 module.exports = router;

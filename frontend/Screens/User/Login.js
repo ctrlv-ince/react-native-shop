@@ -8,6 +8,10 @@ import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import { COLORS, SPACING, RADIUS, SHADOWS, COMMON_STYLES } from '../../assets/common/theme';
 
+import * as SecureStore from 'expo-secure-store';
+import baseURL from '../../assets/common/baseurl';
+import { jwtDecode } from 'jwt-decode';
+
 WebBrowser.maybeCompleteAuthSession();
 
 const Login = (props) => {
@@ -18,15 +22,55 @@ const Login = (props) => {
     const [error, setError] = useState('');
 
     const [request, response, promptAsync] = Google.useAuthRequest({
-        expoClientId: 'YOUR_EXPO_CLIENT_ID',
-        iosClientId: 'YOUR_IOS_CLIENT_ID',
-        androidClientId: 'YOUR_ANDROID_CLIENT_ID',
+        expoClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || 'YOUR_EXPO_CLIENT_ID',
+        iosClientId: process.env.EXPO_PUBLIC_IOS_CLIENT_ID || 'YOUR_IOS_CLIENT_ID',
+        androidClientId: process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID || 'YOUR_ANDROID_CLIENT_ID',
     });
 
     useEffect(() => {
         if (response?.type === 'success') {
             const { authentication } = response;
-            Toast.show({ topOffset: 60, type: 'success', text1: 'Google Login Successful' });
+            Toast.show({ topOffset: 60, type: 'info', text1: 'Authenticating with Google...' });
+            
+            // Get user info from Google
+            fetch('https://www.googleapis.com/userinfo/v2/me', {
+                headers: { Authorization: `Bearer ${authentication.accessToken}` },
+            })
+            .then(res => res.json())
+            .then(userInfo => {
+                // Send to backend
+                return fetch(`${baseURL}users/google-login`, {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: userInfo.email,
+                        name: userInfo.name,
+                        photo: userInfo.picture
+                    })
+                });
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.token) {
+                    SecureStore.setItemAsync('jwt', data.token).then(() => {
+                        const decoded = jwtDecode(data.token);
+                        context.dispatch({
+                            type: 'SET_CURRENT_USER',
+                            payload: decoded,
+                            userProfile: data
+                        });
+                        Toast.show({ topOffset: 60, type: 'success', text1: 'Google Login Successful' });
+                    });
+                } else {
+                    Toast.show({ topOffset: 60, type: 'error', text1: 'Login failed', text2: data.message });
+                }
+            })
+            .catch(err => {
+                Toast.show({ topOffset: 60, type: 'error', text1: 'Google Login Error', text2: err.message });
+            });
         }
     }, [response]);
 

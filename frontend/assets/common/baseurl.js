@@ -1,9 +1,5 @@
 import { Platform } from 'react-native';
 
-let baseURL = '';
-
-{
-    baseURL = 'http://192.168.1.39:3000/api/v1/';
-}
+const baseURL = process.env.EXPO_PUBLIC_API_URL;
 
 export default baseURL;

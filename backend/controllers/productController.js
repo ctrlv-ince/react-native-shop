@@ -2,7 +2,6 @@ const { Product } = require('../models/product');
 const { Category } = require('../models/category');
 const { User } = require('../models/user');
 const mongoose = require('mongoose');
-const { Expo } = require('expo-server-sdk');
 
 exports.getProducts = async (req, res) => {
     let filter = {};
@@ -111,6 +110,7 @@ exports.sendPromo = async (req, res) => {
 
     const users = await User.find({ pushToken: { $exists: true, $ne: '' } });
     
+    const { Expo } = await import('expo-server-sdk');
     let expo = new Expo();
     let messages = [];
 

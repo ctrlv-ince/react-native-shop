@@ -1,6 +1,5 @@
 const { Order } = require('../models/order');
 const { Product } = require('../models/product');
-const { Expo } = require('expo-server-sdk');
 
 exports.getOrders = async (req, res) => {
     const orderList = await Order.find()
@@ -69,6 +68,7 @@ exports.createOrder = async (req, res) => {
 };
 
 exports.updateOrder = async (req, res) => {
+    const { Expo } = await import('expo-server-sdk');
     const order = await Order.findByIdAndUpdate(
         req.params.id,
         {

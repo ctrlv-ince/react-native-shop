@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 import baseURL from '../../assets/common/baseurl';
 import { COLORS, SPACING, RADIUS, SHADOWS } from '../../assets/common/theme';
@@ -11,11 +12,13 @@ const OrderDetails = (props) => {
     useEffect(() => {
         const orderId = props.route.params ? props.route.params.orderId : null;
         if (orderId) {
-            axios.get(`${baseURL}orders/${orderId}`)
-                .then((res) => {
-                    setOrder(res.data);
+            SecureStore.getItemAsync('jwt').then(token => {
+                axios.get(`${baseURL}orders/${orderId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
                 })
+                .then((res) => setOrder(res.data))
                 .catch((error) => console.log(error));
+            });
         }
 
         return () => { setOrder(); }
@@ -35,34 +38,38 @@ const OrderDetails = (props) => {
         }
     };
 
+    const totalPrice = order.orderItems?.reduce((sum, item) => {
+        return sum + (item.price * item.quantity);
+    }, 0) || 0;
+
     return (
         <ScrollView contentContainerStyle={styles.container}>
             {/* Order Header */}
             <View style={styles.card}>
                 <View style={styles.orderHeaderRow}>
-                    <Text style={styles.orderId}>Order #{order.id}</Text>
+                    <Text style={styles.orderId}>Order #{order._id?.slice(-6)}</Text>
                     <View style={[styles.statusBadge, { backgroundColor: getStatusColor(order.status) + '15' }]}>
                         <Text style={[styles.statusText, { color: getStatusColor(order.status) }]}>{order.status}</Text>
                     </View>
                 </View>
                 <Text style={styles.dateText}>
-                    <Ionicons name="calendar-outline" size={13} color={COLORS.textMuted} /> {order.dateOrdered.split('T')[0]}
+                    <Ionicons name="calendar-outline" size={13} color={COLORS.textMuted} /> {order.dateOrdered?.split('T')[0]}
                 </Text>
             </View>
 
-            {/* Shipping */}
-            <View style={styles.card}>
-                <View style={styles.cardHeader}>
-                    <Ionicons name="location-outline" size={18} color={COLORS.primary} />
-                    <Text style={styles.cardTitle}>Shipping Address</Text>
+            {/* Shipping (User address) */}
+            {order.user?.address && (
+                <View style={styles.card}>
+                    <View style={styles.cardHeader}>
+                        <Ionicons name="location-outline" size={18} color={COLORS.primary} />
+                        <Text style={styles.cardTitle}>Shipping Address</Text>
+                    </View>
+                    <View style={styles.addressBlock}>
+                        <Text style={styles.addressLine}>{order.user.name}</Text>
+                        <Text style={styles.addressLine}>{order.user.address}</Text>
+                    </View>
                 </View>
-                <View style={styles.addressBlock}>
-                    <Text style={styles.addressLine}>{order.shippingAddress1}</Text>
-                    {order.shippingAddress2 ? <Text style={styles.addressLine}>{order.shippingAddress2}</Text> : null}
-                    <Text style={styles.addressLine}>{order.city}, {order.zip}</Text>
-                    <Text style={styles.addressLine}>{order.country}</Text>
-                </View>
-            </View>
+            )}
 
             {/* Items */}
             <View style={styles.card}>
@@ -72,8 +79,15 @@ const OrderDetails = (props) => {
                 </View>
                 {order.orderItems.map(item => (
                     <View key={item._id} style={styles.itemRow}>
-                        <Text style={styles.itemName}>{item.product?.name || item.product}</Text>
-                        <Text style={styles.itemQty}>x{item.quantity}</Text>
+                        <Image
+                            source={{ uri: item.product?.images?.[0]?.url || 'https://fakeimg.pl/40x40/?text=P' }}
+                            style={styles.itemImage}
+                        />
+                        <View style={styles.itemInfo}>
+                            <Text style={styles.itemName} numberOfLines={1}>{item.product?.name || 'Product'}</Text>
+                            <Text style={styles.itemMeta}>₱{item.price?.toLocaleString()} × {item.quantity}</Text>
+                        </View>
+                        <Text style={styles.itemTotal}>₱{(item.price * item.quantity).toLocaleString()}</Text>
                     </View>
                 ))}
             </View>
@@ -81,7 +95,7 @@ const OrderDetails = (props) => {
             {/* Total */}
             <View style={styles.totalCard}>
                 <Text style={styles.totalLabel}>Total</Text>
-                <Text style={styles.totalPrice}>₱ {order.totalPrice}</Text>
+                <Text style={styles.totalPrice}>₱ {totalPrice.toLocaleString()}</Text>
             </View>
         </ScrollView>
     );
@@ -150,19 +164,34 @@ const styles = StyleSheet.create({
     },
     itemRow: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        alignItems: 'center',
         padding: SPACING.sm,
         borderBottomWidth: 1,
         borderColor: COLORS.border,
     },
+    itemImage: {
+        width: 40,
+        height: 40,
+        borderRadius: RADIUS.sm,
+        backgroundColor: COLORS.surfaceAlt,
+        marginRight: SPACING.md,
+    },
+    itemInfo: {
+        flex: 1,
+    },
     itemName: {
         fontSize: 14,
         color: COLORS.text,
-        flex: 1,
-    },
-    itemQty: {
-        fontSize: 14,
         fontWeight: '600',
+    },
+    itemMeta: {
+        fontSize: 12,
+        color: COLORS.textMuted,
+        marginTop: 2,
+    },
+    itemTotal: {
+        fontSize: 14,
+        fontWeight: '700',
         color: COLORS.primary,
     },
     totalCard: {

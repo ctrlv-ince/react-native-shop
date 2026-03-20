@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 import baseURL from '../../assets/common/baseurl';
 import { COLORS, SPACING, RADIUS, SHADOWS } from '../../assets/common/theme';
@@ -35,8 +36,11 @@ const Categories = (props) => {
                 {
                     text: "Delete",
                     style: "destructive",
-                    onPress: () => {
-                        axios.delete(`${baseURL}categories/${id}`)
+                    onPress: async () => {
+                        const token = await SecureStore.getItemAsync('jwt');
+                        axios.delete(`${baseURL}categories/${id}`, {
+                            headers: { Authorization: `Bearer ${token}` }
+                        })
                             .then(() => {
                                 setCategories(categories.filter((item) => item._id !== id));
                             })

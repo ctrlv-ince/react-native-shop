@@ -14,6 +14,20 @@ exports.getOrders = async (req, res) => {
     res.send(orderList);
 };
 
+exports.getOrdersByUser = async (req, res) => {
+    const userOrderList = await Order.find({ user: req.params.userId })
+        .populate({
+            path: 'orderItems.product',
+            select: 'name images price',
+        })
+        .sort({ dateOrdered: -1 });
+
+    if (!userOrderList) {
+        return res.status(500).json({ success: false });
+    }
+    res.send(userOrderList);
+};
+
 exports.getOrderById = async (req, res) => {
     const order = await Order.findById(req.params.id)
         .populate('user', 'name email pushToken')

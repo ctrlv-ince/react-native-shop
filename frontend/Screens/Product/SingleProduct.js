@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { Image, View, StyleSheet, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart } from '../../Redux/Actions/cartActions';
@@ -9,10 +9,12 @@ import axios from 'axios';
 import baseURL from '../../assets/common/baseurl';
 import { useFocusEffect } from '@react-navigation/native';
 import { COLORS, SPACING, RADIUS, SHADOWS, COMMON_STYLES } from '../../assets/common/theme';
+import { AuthContext } from '../../Context/Store/AuthGlobal';
 
 const SingleProduct = (props) => {
     const [item, setItem] = useState(props.route.params.item);
     const dispatch = useDispatch();
+    const context = useContext(AuthContext);
     const { reviews, loading: reviewsLoading } = useSelector(state => state.reviewsState);
 
     useFocusEffect(
@@ -121,6 +123,14 @@ const SingleProduct = (props) => {
                     ]}
                     onPress={() => {
                         if (item.stock <= 0) return;
+                        if (!context.stateUser.isAuthenticated) {
+                            Toast.show({
+                                topOffset: 60,
+                                type: 'error',
+                                text1: 'Please log in to add items to cart'
+                            });
+                            return;
+                        }
                         dispatch(addToCart(item));
                         Toast.show({
                             topOffset: 60,

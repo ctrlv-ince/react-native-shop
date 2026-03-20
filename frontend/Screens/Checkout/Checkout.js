@@ -1,88 +1,114 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Text, View, StyleSheet, TextInput, ScrollView, TouchableOpacity } from 'react-native';
+import { Text, View, StyleSheet, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
 import { AuthContext } from '../../Context/Store/AuthGlobal';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { clearCart } from '../../Redux/Actions/cartActions';
 import { Ionicons } from '@expo/vector-icons';
+import * as SecureStore from 'expo-secure-store';
+import axios from 'axios';
+import baseURL from '../../assets/common/baseurl';
 import Toast from 'react-native-toast-message';
 import { COLORS, SPACING, RADIUS, SHADOWS, COMMON_STYLES } from '../../assets/common/theme';
 
 const Checkout = (props) => {
     const context = useContext(AuthContext);
     const cartItems = useSelector(state => state.cartItems);
+    const dispatch = useDispatch();
 
-    const [orderItems, setOrderItems] = useState([]);
-    const [address, setAddress] = useState('');
-    const [address2, setAddress2] = useState('');
-    const [city, setCity] = useState('');
-    const [zip, setZip] = useState('');
-    const [country, setCountry] = useState('');
-    const [phone, setPhone] = useState('');
+    const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-    useEffect(() => {
-        setOrderItems(cartItems);
+    const confirmOrder = () => {
+        Alert.alert(
+            'Confirm Order',
+            `Place order for ₱${total.toLocaleString()}?\n\nItems: ${cartItems.length}\nDelivery to your registered address.`,
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Place Order',
+                    onPress: async () => {
+                        try {
+                            const token = await SecureStore.getItemAsync('jwt');
+                            const orderData = {
+                                orderItems: cartItems.map(item => ({
+                                    product: item.id,
+                                    quantity: item.quantity,
+                                })),
+                                user: context.stateUser.user.userId,
+                            };
 
-        if(context.stateUser.isAuthenticated) {
-            setPhone(context.stateUser.userProfile?.phone || '');
-        }
+                            await axios.post(`${baseURL}orders`, orderData, {
+                                headers: { Authorization: `Bearer ${token}` }
+                            });
 
-        return () => {
-            setOrderItems([]);
-        }
-    }, [cartItems]);
-
-    const checkOut = () => {
-        if (!address || !city || !zip || !country || !phone) {
-            Toast.show({ topOffset: 60, type: 'error', text1: 'Please fill in required fields' });
-            return;
-        }
-
-        let order = {
-            city,
-            country,
-            dateOrdered: Date.now(),
-            orderItems: cartItems.map(item => ({ product: item.id, quantity: item.quantity })),
-            phone,
-            shippingAddress1: address,
-            shippingAddress2: address2,
-            status: "Pending",
-            user: context.stateUser.user.userId,
-            zip,
-        }
-
-        props.navigation.navigate("Payment", { order: order })
-    }
+                            dispatch(clearCart());
+                            Toast.show({
+                                topOffset: 60,
+                                type: 'success',
+                                text1: 'Order placed successfully!',
+                                text2: 'Check your order history for updates'
+                            });
+                            props.navigation.navigate('Cart');
+                        } catch (error) {
+                            console.error(error);
+                            Toast.show({
+                                topOffset: 60,
+                                type: 'error',
+                                text1: 'Failed to place order',
+                                text2: error.response?.data || error.message
+                            });
+                        }
+                    }
+                }
+            ]
+        );
+    };
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
+            {/* Order Summary */}
             <View style={styles.card}>
-                <Text style={styles.sectionTitle}>Shipping Information</Text>
+                <Text style={styles.sectionTitle}>Order Summary</Text>
 
-                <Text style={styles.label}>Phone *</Text>
-                <TextInput style={styles.input} placeholder="Enter phone number" placeholderTextColor={COLORS.textMuted} keyboardType={"numeric"} value={phone} onChangeText={setPhone} />
-                
-                <Text style={styles.label}>Address Line 1 *</Text>
-                <TextInput style={styles.input} placeholder="Street address" placeholderTextColor={COLORS.textMuted} value={address} onChangeText={setAddress} />
-                
-                <Text style={styles.label}>Address Line 2</Text>
-                <TextInput style={styles.input} placeholder="Apt, suite, unit (optional)" placeholderTextColor={COLORS.textMuted} value={address2} onChangeText={setAddress2} />
-                
-                <Text style={styles.label}>City *</Text>
-                <TextInput style={styles.input} placeholder="City" placeholderTextColor={COLORS.textMuted} value={city} onChangeText={setCity} />
-                
-                <Text style={styles.label}>Zip Code *</Text>
-                <TextInput style={styles.input} placeholder="Zip / Postal code" placeholderTextColor={COLORS.textMuted} keyboardType={"numeric"} value={zip} onChangeText={setZip} />
-                
-                <Text style={styles.label}>Country *</Text>
-                <TextInput style={styles.input} placeholder="Country" placeholderTextColor={COLORS.textMuted} value={country} onChangeText={setCountry} />
+                {cartItems.map((item, index) => (
+                    <View key={item.id || index} style={styles.itemRow}>
+                        <Image
+                            source={{ uri: item.image || 'https://fakeimg.pl/50x50/?text=P' }}
+                            style={styles.itemImage}
+                        />
+                        <View style={styles.itemInfo}>
+                            <Text style={styles.itemName} numberOfLines={1}>{item.name}</Text>
+                            <Text style={styles.itemMeta}>₱{item.price?.toLocaleString()} × {item.quantity}</Text>
+                        </View>
+                        <Text style={styles.itemTotal}>₱{(item.price * item.quantity).toLocaleString()}</Text>
+                    </View>
+                ))}
 
-                <TouchableOpacity
-                    style={[COMMON_STYLES.primaryButton, { marginTop: SPACING.lg }]}
-                    onPress={checkOut}
-                    activeOpacity={0.7}
-                >
-                    <Text style={COMMON_STYLES.primaryButtonText}>Continue to Payment</Text>
-                </TouchableOpacity>
+                {/* Total */}
+                <View style={styles.totalRow}>
+                    <Text style={styles.totalLabel}>Total</Text>
+                    <Text style={styles.totalPrice}>₱{total.toLocaleString()}</Text>
+                </View>
             </View>
+
+            {/* Delivery Info */}
+            <View style={styles.card}>
+                <View style={styles.cardHeader}>
+                    <Ionicons name="location-outline" size={18} color={COLORS.primary} />
+                    <Text style={styles.cardHeaderText}>Delivery Address</Text>
+                </View>
+                <Text style={styles.addressText}>
+                    Your order will be delivered to the address on your profile.
+                </Text>
+            </View>
+
+            {/* Place Order Button */}
+            <TouchableOpacity
+                style={[COMMON_STYLES.primaryButton, { marginTop: SPACING.md }]}
+                onPress={confirmOrder}
+                activeOpacity={0.7}
+            >
+                <Text style={COMMON_STYLES.primaryButtonText}>Place Order</Text>
+            </TouchableOpacity>
         </ScrollView>
     );
 };
@@ -96,30 +122,79 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.white,
         borderRadius: RADIUS.lg,
         padding: SPACING.lg,
+        marginBottom: SPACING.md,
         ...SHADOWS.medium,
     },
     sectionTitle: {
         fontSize: 20,
         fontWeight: '700',
         color: COLORS.text,
-        marginBottom: SPACING.lg,
+        marginBottom: SPACING.md,
     },
-    label: {
-        fontSize: 13,
-        fontWeight: '600',
-        color: COLORS.textMuted,
-        marginBottom: 6,
-        marginTop: SPACING.md,
+    itemRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: SPACING.sm,
+        borderBottomWidth: 1,
+        borderColor: COLORS.border,
     },
-    input: {
-        height: 48,
-        backgroundColor: COLORS.inputBg,
-        borderRadius: RADIUS.md,
-        paddingHorizontal: SPACING.md,
-        borderWidth: 1.5,
-        borderColor: COLORS.inputBorder,
+    itemImage: {
+        width: 44,
+        height: 44,
+        borderRadius: RADIUS.sm,
+        backgroundColor: COLORS.surfaceAlt,
+        marginRight: SPACING.md,
+    },
+    itemInfo: {
+        flex: 1,
+    },
+    itemName: {
         fontSize: 14,
+        fontWeight: '600',
         color: COLORS.text,
+    },
+    itemMeta: {
+        fontSize: 12,
+        color: COLORS.textMuted,
+        marginTop: 2,
+    },
+    itemTotal: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: COLORS.primary,
+    },
+    totalRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingTop: SPACING.md,
+        marginTop: SPACING.sm,
+    },
+    totalLabel: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: COLORS.text,
+    },
+    totalPrice: {
+        fontSize: 22,
+        fontWeight: '800',
+        color: COLORS.primary,
+    },
+    cardHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        marginBottom: SPACING.sm,
+    },
+    cardHeaderText: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: COLORS.text,
+    },
+    addressText: {
+        fontSize: 14,
+        color: COLORS.textMuted,
+        lineHeight: 20,
     },
 });
 

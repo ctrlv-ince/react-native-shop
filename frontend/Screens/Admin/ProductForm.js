@@ -3,7 +3,7 @@ import { View, Text, Image, StyleSheet, TextInput, ScrollView, TouchableOpacity 
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from "expo-image-picker";
 import Toast from "react-native-toast-message";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from 'expo-secure-store';
 import axios from "axios";
 import baseURL from "../../assets/common/baseurl";
 import { COLORS, SPACING, RADIUS, SHADOWS, COMMON_STYLES } from '../../assets/common/theme';
@@ -100,9 +100,11 @@ const ProductForm = (props) => {
             });
         }
 
+        const token = await SecureStore.getItemAsync('jwt');
         const config = {
             headers: {
-                "Content-Type": "multipart/form-data"
+                "Content-Type": "multipart/form-data",
+                Authorization: `Bearer ${token}`,
             }
         };
 

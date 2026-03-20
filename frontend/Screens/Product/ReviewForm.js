@@ -10,7 +10,7 @@ import Toast from 'react-native-toast-message';
 import { COLORS, SPACING, RADIUS, SHADOWS, COMMON_STYLES } from '../../assets/common/theme';
 
 const ReviewForm = (props) => {
-    const { productId } = props.route.params;
+    const { productId, orderId, productName } = props.route.params;
     const [rating, setRating] = useState(5);
     const [comment, setComment] = useState('');
     const [existingReviewId, setExistingReviewId] = useState(null);
@@ -41,7 +41,9 @@ const ReviewForm = (props) => {
 
         const reviewData = {
             user: context.stateUser.user.userId,
+            name: context.stateUser.user.name || 'User',
             product: productId,
+            order: orderId,
             rating,
             comment
         };

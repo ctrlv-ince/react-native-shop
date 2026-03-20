@@ -1,5 +1,6 @@
 import axios from 'axios';
 import baseURL from '../../assets/common/baseurl';
+import * as SecureStore from 'expo-secure-store';
 
 export const fetchReviews = (productId) => async (dispatch) => {
     try {
@@ -13,7 +14,10 @@ export const fetchReviews = (productId) => async (dispatch) => {
 
 export const createReview = (reviewData) => async (dispatch) => {
     try {
-        const { data } = await axios.post(`${baseURL}reviews`, reviewData);
+        const token = await SecureStore.getItemAsync('jwt');
+        const { data } = await axios.post(`${baseURL}reviews`, reviewData, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
         dispatch({ type: 'ADD_REVIEW_SUCCESS', payload: data });
         return { success: true };
     } catch (error) {
@@ -24,7 +28,10 @@ export const createReview = (reviewData) => async (dispatch) => {
 
 export const updateReview = (id, reviewData) => async (dispatch) => {
     try {
-        const { data } = await axios.put(`${baseURL}reviews/${id}`, reviewData);
+        const token = await SecureStore.getItemAsync('jwt');
+        const { data } = await axios.put(`${baseURL}reviews/${id}`, reviewData, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
         dispatch({ type: 'UPDATE_REVIEW_SUCCESS', payload: data });
         return { success: true };
     } catch (error) {

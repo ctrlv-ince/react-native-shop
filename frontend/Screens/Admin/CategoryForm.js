@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import Toast from "react-native-toast-message";
+import * as SecureStore from 'expo-secure-store';
 import axios from "axios";
 import baseURL from "../../assets/common/baseurl";
 import { COLORS, SPACING, RADIUS, SHADOWS, COMMON_STYLES } from '../../assets/common/theme';
@@ -34,16 +35,18 @@ const CategoryForm = (props) => {
         }
     }, []);
 
-    const submitCategory = () => {
+    const submitCategory = async () => {
         if (name === "") {
             setError("Category name is required");
             return;
         }
 
         const data = { name, icon, color };
+        const token = await SecureStore.getItemAsync('jwt');
+        const config = { headers: { Authorization: `Bearer ${token}` } };
 
         if (item !== null) {
-            axios.put(`${baseURL}categories/${item._id}`, data)
+            axios.put(`${baseURL}categories/${item._id}`, data, config)
                 .then((res) => {
                     if (res.status === 200) {
                         Toast.show({ topOffset: 60, type: "success", text1: "Category updated successfully" });
@@ -54,7 +57,7 @@ const CategoryForm = (props) => {
                     Toast.show({ topOffset: 60, type: "error", text1: "Something went wrong" });
                 });
         } else {
-            axios.post(`${baseURL}categories`, data)
+            axios.post(`${baseURL}categories`, data, config)
                 .then((res) => {
                     if (res.status === 200 || res.status === 201) {
                         Toast.show({ topOffset: 60, type: "success", text1: "Category created successfully" });

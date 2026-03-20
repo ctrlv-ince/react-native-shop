@@ -6,7 +6,9 @@ import Login from '../Screens/User/Login';
 import Register from '../Screens/User/Register';
 import UserProfile from '../Screens/User/UserProfile';
 import EditProfile from '../Screens/User/EditProfile';
+import OrderHistory from '../Screens/User/OrderHistory';
 import OrderDetails from '../Screens/User/OrderDetails';
+import ReviewForm from '../Screens/Product/ReviewForm';
 import { STACK_HEADER_STYLE } from '../assets/common/theme';
 
 const Stack = createStackNavigator();
@@ -48,10 +50,25 @@ export default function UserNavigator() {
                 }}
             />
             <Stack.Screen 
+                name="Order History"
+                component={OrderHistory}
+                options={{
+                    headerShown: true
+                }}
+            />
+            <Stack.Screen 
                 name="Order Details"
                 component={OrderDetails}
                 options={{
                     headerShown: true
+                }}
+            />
+            <Stack.Screen 
+                name="Review Form"
+                component={ReviewForm}
+                options={{
+                    headerShown: true,
+                    headerTitle: 'Write Review'
                 }}
             />
         </Stack.Navigator>

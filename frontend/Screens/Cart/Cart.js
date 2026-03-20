@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { removeFromCart, clearCart } from '../../Redux/Actions/cartActions';
 import { SwipeListView } from 'react-native-swipe-list-view';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CartItem from './CartItem';
 import { COLORS, SPACING, RADIUS, SHADOWS, COMMON_STYLES } from '../../assets/common/theme';
 
@@ -12,6 +13,7 @@ var { height, width } = Dimensions.get('window');
 const Cart = (props) => {
     const cartItems = useSelector(state => state.cartItems);
     const dispatch = useDispatch();
+    const insets = useSafeAreaInsets();
 
     var total = 0;
     cartItems.forEach(cart => {
@@ -21,7 +23,7 @@ const Cart = (props) => {
     return (
         <>
             {cartItems.length ? (
-                <View style={styles.container}>
+                <View style={[styles.container, { paddingTop: insets.top }]}>
                     {/* Header */}
                     <View style={styles.header}>
                         <Text style={styles.headerTitle}>My Cart</Text>
@@ -78,7 +80,7 @@ const Cart = (props) => {
                     </View>
                 </View>
             ) : (
-                <View style={styles.emptyContainer}>
+                <View style={[styles.emptyContainer, { paddingTop: insets.top }]}>
                     <Ionicons name="cart-outline" size={80} color={COLORS.textLight} />
                     <Text style={styles.emptyTitle}>Your cart is empty</Text>
                     <Text style={styles.emptySubtitle}>Add products to your cart to get started</Text>

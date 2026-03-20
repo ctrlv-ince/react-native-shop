@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from "react";
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, Image } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from '@expo/vector-icons';
+import * as SecureStore from 'expo-secure-store';
 import axios from "axios";
 import baseURL from "../../assets/common/baseurl";
 import { COLORS, SPACING, RADIUS, SHADOWS, COMMON_STYLES } from '../../assets/common/theme';
@@ -32,8 +33,11 @@ const Products = (props) => {
                 {
                     text: "Delete",
                     style: "destructive",
-                    onPress: () => {
-                        axios.delete(`${baseURL}products/${id}`)
+                    onPress: async () => {
+                        const token = await SecureStore.getItemAsync('jwt');
+                        axios.delete(`${baseURL}products/${id}`, {
+                            headers: { Authorization: `Bearer ${token}` }
+                        })
                             .then(() => {
                                 const productsFilter = productList.filter((item) => item.id !== id);
                                 setProductList(productsFilter);
@@ -75,7 +79,14 @@ const Products = (props) => {
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
                     <View style={styles.productCard}>
-                        <Text style={styles.productName} numberOfLines={1}>{item.name}</Text>
+                        <Image 
+                            source={{ uri: item.images?.[0]?.url || 'https://fakeimg.pl/100x100/?text=No+Image' }}
+                            style={styles.productImage}
+                        />
+                        <View style={styles.productInfo}>
+                            <Text style={styles.productName} numberOfLines={1}>{item.name}</Text>
+                            <Text style={styles.productPrice}>₱{item.price?.toLocaleString()}</Text>
+                        </View>
                         <View style={styles.actionRow}>
                             <TouchableOpacity 
                                 style={[styles.actionBtn, { backgroundColor: COLORS.primaryLight }]}
@@ -131,20 +142,34 @@ const styles = StyleSheet.create({
     },
     productCard: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
         backgroundColor: COLORS.white,
-        padding: SPACING.base,
+        padding: SPACING.sm,
         borderRadius: RADIUS.md,
         marginBottom: SPACING.sm,
         ...SHADOWS.small,
     },
+    productImage: {
+        width: 48,
+        height: 48,
+        borderRadius: RADIUS.sm,
+        backgroundColor: COLORS.surfaceAlt,
+        marginRight: SPACING.md,
+    },
+    productInfo: {
+        flex: 1,
+        marginRight: SPACING.sm,
+    },
     productName: {
-        fontSize: 15,
+        fontSize: 14,
         fontWeight: '700',
         color: COLORS.text,
-        flex: 1,
-        marginRight: SPACING.md,
+    },
+    productPrice: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: COLORS.primary,
+        marginTop: 2,
     },
     actionRow: {
         flexDirection: 'row',

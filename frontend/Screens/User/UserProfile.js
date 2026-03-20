@@ -80,6 +80,17 @@ const UserProfile = (props) => {
             <View style={styles.actionsCard}>
                 <TouchableOpacity 
                     style={styles.actionRow}
+                    onPress={() => props.navigation.navigate('Order History')}
+                    activeOpacity={0.6}
+                >
+                    <View style={[styles.actionIcon, { backgroundColor: COLORS.warning + '15' }]}>
+                        <Ionicons name="receipt-outline" size={20} color={COLORS.warning} />
+                    </View>
+                    <Text style={styles.actionText}>Order History</Text>
+                    <Ionicons name="chevron-forward" size={18} color={COLORS.textMuted} />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                    style={styles.actionRow}
                     onPress={() => props.navigation.navigate('Edit Profile')}
                     activeOpacity={0.6}
                 >

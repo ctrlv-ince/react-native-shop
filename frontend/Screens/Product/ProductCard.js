@@ -7,7 +7,8 @@ const { width } = Dimensions.get('window');
 const CARD_WIDTH = width / 2 - 24;
 
 const ProductCard = (props) => {
-    const { name, price, image, countInStock, onPress } = props;
+    const { name, price, images, stock, onPress } = props;
+    const imageUrl = images?.[0]?.url;
 
     return (
         <View style={styles.container}>
@@ -15,7 +16,7 @@ const ProductCard = (props) => {
                 <Image 
                     style={styles.image}
                     resizeMode="cover"
-                    source={{ uri: image ? image : 'https://cdn.pixabay.com/photo/2012/04/01/17/29/box-23649_960_720.png' }}
+                    source={{ uri: imageUrl ? imageUrl : 'https://cdn.pixabay.com/photo/2012/04/01/17/29/box-23649_960_720.png' }}
                 />
             </View>
             <View style={styles.infoContainer}>
@@ -24,7 +25,7 @@ const ProductCard = (props) => {
                 </Text>
                 <Text style={styles.price}>₱{price}</Text>
 
-                {countInStock > 0 ? (
+                {stock > 0 ? (
                     <TouchableOpacity style={styles.addButton} onPress={onPress} activeOpacity={0.7}>
                         <Ionicons name="cart-outline" size={16} color={COLORS.white} />
                         <Text style={styles.addButtonText}>Add</Text>

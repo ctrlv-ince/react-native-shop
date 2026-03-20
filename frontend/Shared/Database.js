@@ -42,7 +42,7 @@ export const insertCartItem = async (item) => {
         } else {
             await db.runAsync(
                 'INSERT INTO Cart (productId, name, price, image, quantity) VALUES (?, ?, ?, ?, ?)',
-                [item.id, item.name, item.price, item.image, 1]
+                [item.id, item.name, item.price, item.images?.[0]?.url || item.image || '', 1]
             );
         }
     } catch (error) {

@@ -51,7 +51,7 @@ const HomeScreen = (props) => {
         }, [context.stateUser.isAuthenticated])
     );
 
-    const featuredProducts = products.filter(p => p.countInStock > 0).slice(0, 6);
+    const featuredProducts = products.filter(p => p.stock > 0).slice(0, 6);
     const userName = userProfile?.name?.split(' ')[0] || 'Gamer';
 
     const categoryIcons = {
@@ -175,7 +175,7 @@ const HomeScreen = (props) => {
                                     activeOpacity={0.7}
                                 >
                                     <Image
-                                        source={{ uri: item.image || 'https://fakeimg.pl/200x200/' }}
+                                        source={{ uri: item.images?.[0]?.url || 'https://fakeimg.pl/200x200/' }}
                                         style={styles.featuredImage}
                                         resizeMode="cover"
                                     />

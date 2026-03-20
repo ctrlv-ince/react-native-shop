@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from '@expo/vector-icons';
 import axios from "axios";
@@ -24,12 +24,25 @@ const Products = (props) => {
     );
 
     const deleteProduct = (id) => {
-        axios.delete(`${baseURL}products/${id}`)
-            .then(() => {
-                const productsFilter = productList.filter((item) => item.id !== id);
-                setProductList(productsFilter);
-            })
-            .catch((error) => console.log(error));
+        Alert.alert(
+            "Delete Product",
+            "Are you sure you want to delete this product? This action cannot be undone.",
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: () => {
+                        axios.delete(`${baseURL}products/${id}`)
+                            .then(() => {
+                                const productsFilter = productList.filter((item) => item.id !== id);
+                                setProductList(productsFilter);
+                            })
+                            .catch((error) => console.log(error));
+                    }
+                }
+            ]
+        );
     };
 
     const sendPromo = (id) => {

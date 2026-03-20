@@ -37,15 +37,13 @@ exports.createProduct = async (req, res) => {
     let product = new Product({
         name: req.body.name,
         description: req.body.description,
-        richDescription: req.body.richDescription,
-        image: req.file.path,
-        brand: req.body.brand,
+        images: [{
+            public_id: req.file.filename || req.file.public_id || 'default',
+            url: req.file.path,
+        }],
         price: req.body.price,
         category: req.body.category,
-        countInStock: req.body.countInStock,
-        rating: req.body.rating,
-        numReviews: req.body.numReviews,
-        isFeatured: req.body.isFeatured
+        stock: req.body.stock,
     });
 
     product = await product.save();
@@ -66,12 +64,13 @@ exports.updateProduct = async (req, res) => {
     if (!product) return res.status(400).send('Invalid Product!');
 
     const file = req.file;
-    let imagepath;
+    let images = product.images;
 
     if (file) {
-        imagepath = req.file.path;
-    } else {
-        imagepath = product.image;
+        images = [{
+            public_id: req.file.filename || req.file.public_id || 'default',
+            url: req.file.path,
+        }];
     }
 
     const updatedProduct = await Product.findByIdAndUpdate(
@@ -79,15 +78,10 @@ exports.updateProduct = async (req, res) => {
         {
             name: req.body.name,
             description: req.body.description,
-            richDescription: req.body.richDescription,
-            image: imagepath,
-            brand: req.body.brand,
+            images: images,
             price: req.body.price,
             category: req.body.category,
-            countInStock: req.body.countInStock,
-            rating: req.body.rating,
-            numReviews: req.body.numReviews,
-            isFeatured: req.body.isFeatured
+            stock: req.body.stock,
         },
         { new: true }
     );

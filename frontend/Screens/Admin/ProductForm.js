@@ -10,7 +10,6 @@ import { COLORS, SPACING, RADIUS, SHADOWS, COMMON_STYLES } from '../../assets/co
 
 const ProductForm = (props) => {
     const [pickerValue, setPickerValue] = useState("Unknown");
-    const [brand, setBrand] = useState("");
     const [name, setName] = useState("");
     const [price, setPrice] = useState("");
     const [description, setDescription] = useState("");
@@ -20,7 +19,7 @@ const ProductForm = (props) => {
     const [categories, setCategories] = useState([]);
     const [token, setToken] = useState("");
     const [error, setError] = useState("");
-    const [countInStock, setCountInStock] = useState("");
+    const [stock, setStock] = useState("");
     const [item, setItem] = useState(null);
 
     useEffect(() => {
@@ -28,14 +27,14 @@ const ProductForm = (props) => {
             setItem(null);
         } else {
             setItem(props.route.params.item);
-            setBrand(props.route.params.item.brand);
             setName(props.route.params.item.name);
             setPrice(props.route.params.item.price.toString());
             setDescription(props.route.params.item.description);
-            setMainImage(props.route.params.item.image);
-            setImage(props.route.params.item.image);
+            const imgUrl = props.route.params.item.images?.[0]?.url || '';
+            setMainImage(imgUrl);
+            setImage(imgUrl);
             setCategory(props.route.params.item.category?._id || props.route.params.item.category);
-            setCountInStock(props.route.params.item.countInStock.toString());
+            setStock(props.route.params.item.stock?.toString() || '0');
         }
 
         axios.get(`${baseURL}categories`).then((res) => {
@@ -79,7 +78,7 @@ const ProductForm = (props) => {
     }
 
     const addProduct = async () => {
-        if (name === "" || price === "" || description === "" || category === "" || countInStock === "") {
+        if (name === "" || price === "" || description === "" || category === "" || stock === "") {
             setError("Please fill in the form correctly");
             return;
         }
@@ -88,17 +87,12 @@ const ProductForm = (props) => {
         const newImageUri = "file:///" + image.split("file:/").join("");
 
         formData.append("name", name);
-        formData.append("brand", brand);
         formData.append("price", price);
         formData.append("description", description);
         formData.append("category", category);
-        formData.append("countInStock", countInStock);
-        formData.append("richDescription", description);
-        formData.append("rating", 0);
-        formData.append("numReviews", 0);
-        formData.append("isFeatured", false);
+        formData.append("stock", stock);
 
-        if (image !== item?.image && image) {
+        if (image !== (item?.images?.[0]?.url) && image) {
             formData.append("image", {
                 uri: newImageUri,
                 type: "image/jpeg",
@@ -155,9 +149,6 @@ const ProductForm = (props) => {
 
             {/* Form */}
             <View style={styles.formCard}>
-                <Text style={styles.label}>Brand</Text>
-                <TextInput style={styles.input} placeholder="Brand" placeholderTextColor={COLORS.textMuted} value={brand} onChangeText={setBrand} />
-                
                 <Text style={styles.label}>Name *</Text>
                 <TextInput style={styles.input} placeholder="Product name" placeholderTextColor={COLORS.textMuted} value={name} onChangeText={setName} />
                 
@@ -165,10 +156,31 @@ const ProductForm = (props) => {
                 <TextInput style={styles.input} placeholder="Price" placeholderTextColor={COLORS.textMuted} keyboardType={"numeric"} value={price} onChangeText={setPrice} />
                 
                 <Text style={styles.label}>Stock Count *</Text>
-                <TextInput style={styles.input} placeholder="Count in stock" placeholderTextColor={COLORS.textMuted} keyboardType={"numeric"} value={countInStock} onChangeText={setCountInStock} />
+                <TextInput style={styles.input} placeholder="Count in stock" placeholderTextColor={COLORS.textMuted} keyboardType={"numeric"} value={stock} onChangeText={setStock} />
                 
                 <Text style={styles.label}>Description *</Text>
+
                 <TextInput style={[styles.input, { height: 80, textAlignVertical: 'top', paddingTop: SPACING.md }]} placeholder="Product description" placeholderTextColor={COLORS.textMuted} value={description} onChangeText={setDescription} multiline />
+
+                <Text style={styles.label}>Category *</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll} contentContainerStyle={styles.categoryScrollContent}>
+                    {categories.map((c) => (
+                        <TouchableOpacity
+                            key={c._id}
+                            style={[
+                                styles.categoryChip,
+                                category === c._id && styles.categoryChipActive
+                            ]}
+                            onPress={() => setCategory(c._id)}
+                            activeOpacity={0.7}
+                        >
+                            <Text style={[
+                                styles.categoryChipText,
+                                category === c._id && styles.categoryChipTextActive
+                            ]}>{c.name}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
 
                 {error ? (
                     <View style={styles.errorBanner}>
@@ -258,6 +270,33 @@ const styles = StyleSheet.create({
         borderColor: COLORS.inputBorder,
         fontSize: 15,
         color: COLORS.text,
+    },
+    categoryScroll: {
+        marginTop: 4,
+    },
+    categoryScrollContent: {
+        gap: 8,
+        paddingVertical: 4,
+    },
+    categoryChip: {
+        paddingVertical: SPACING.sm,
+        paddingHorizontal: SPACING.base,
+        borderRadius: RADIUS.full,
+        backgroundColor: COLORS.inputBg,
+        borderWidth: 1.5,
+        borderColor: COLORS.inputBorder,
+    },
+    categoryChipActive: {
+        backgroundColor: COLORS.primaryLight,
+        borderColor: COLORS.primary,
+    },
+    categoryChipText: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: COLORS.textMuted,
+    },
+    categoryChipTextActive: {
+        color: COLORS.primary,
     },
     errorBanner: {
         flexDirection: 'row',

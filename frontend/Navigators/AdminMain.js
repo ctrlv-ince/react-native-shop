@@ -6,7 +6,7 @@ import { COLORS, SHADOWS } from '../assets/common/theme';
 
 import Dashboard from '../Screens/Admin/Dashboard';
 import AdminNavigator from './AdminNavigator'; // Has Products & Orders (but we'll just label it Products)
-import Categories from '../Screens/Admin/Categories';
+import CategoryNavigator from './CategoryNavigator';
 import Users from '../Screens/Admin/Users';
 import UserNavigator from './UserNavigator'; // For admin to see their own profile / log out
 
@@ -55,8 +55,8 @@ export default function AdminMain() {
                 }}
             />
             <Tab.Screen 
-                name="Categories" 
-                component={Categories}
+                name="CategoriesTab" 
+                component={CategoryNavigator}
                 options={{
                     tabBarIcon: ({ color, size }) => (
                         <Ionicons name="grid" size={size} color={color} />

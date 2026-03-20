@@ -1,5 +1,17 @@
 const mongoose = require('mongoose');
 
+const reviewSchema = mongoose.Schema(
+  {
+    user: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
+    name: { type: String, required: true },
+    rating: { type: Number, required: true },
+    comment: { type: String, required: true },
+    order: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Order' },
+    hasBadWords: { type: Boolean, default: false },
+  },
+  { timestamps: true }
+);
+
 const productSchema = mongoose.Schema({
     name: {
         type: String,
@@ -9,21 +21,18 @@ const productSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    richDescription: {
+    images: [
+    {
+      public_id: {
         type: String,
-        default: ''
-    },
-    image: {
+        required: true,
+      },
+      url: {
         type: String,
-        default: ''
+        required: true,
+      },
     },
-    images: [{
-        type: String
-    }],
-    brand: {
-        type: String,
-        default: ''
-    },
+  ],
     price: {
         type: Number,
         default: 0
@@ -33,11 +42,10 @@ const productSchema = mongoose.Schema({
         ref: 'Category',
         required: true
     },
-    countInStock: {
+    stock: {
         type: Number,
         required: true,
-        min: 0,
-        max: 255
+        default: 0,
     },
     rating: {
         type: Number,
@@ -47,10 +55,7 @@ const productSchema = mongoose.Schema({
         type: Number,
         default: 0,
     },
-    isFeatured: {
-        type: Boolean,
-        default: false,
-    },
+    reviews: [reviewSchema],
     dateCreated: {
         type: Date,
         default: Date.now,

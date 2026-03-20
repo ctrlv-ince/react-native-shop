@@ -38,7 +38,7 @@ const SingleProduct = (props) => {
                 {/* Product Image */}
                 <View style={styles.imageContainer}>
                     <Image 
-                        source={{ uri: item.image ? item.image : 'https://fakeimg.pl/400x400/' }}
+                        source={{ uri: item.images?.[0]?.url || 'https://fakeimg.pl/400x400/' }}
                         resizeMode="contain"
                         style={styles.image}
                     />
@@ -46,23 +46,22 @@ const SingleProduct = (props) => {
 
                 {/* Product Info */}
                 <View style={styles.contentContainer}>
-                    <Text style={styles.brand}>{item.brand}</Text>
                     <Text style={styles.contentHeader}>{item.name}</Text>
                     
                     <View style={styles.availabilityRow}>
                         <View style={[
                             styles.stockBadge,
-                            { backgroundColor: item.countInStock > 0 ? COLORS.success + '15' : COLORS.danger + '15' }
+                            { backgroundColor: item.stock > 0 ? COLORS.success + '15' : COLORS.danger + '15' }
                         ]}>
                             <View style={[
                                 styles.stockDot,
-                                { backgroundColor: item.countInStock > 0 ? COLORS.success : COLORS.danger }
+                                { backgroundColor: item.stock > 0 ? COLORS.success : COLORS.danger }
                             ]} />
                             <Text style={[
                                 styles.stockText,
-                                { color: item.countInStock > 0 ? COLORS.success : COLORS.danger }
+                                { color: item.stock > 0 ? COLORS.success : COLORS.danger }
                             ]}>
-                                {item.countInStock > 0 ? 'In Stock' : 'Out of Stock'}
+                                {item.stock > 0 ? 'In Stock' : 'Out of Stock'}
                             </Text>
                         </View>
                     </View>
@@ -118,10 +117,10 @@ const SingleProduct = (props) => {
                 <TouchableOpacity 
                     style={[
                         styles.addToCartButton,
-                        item.countInStock <= 0 && { opacity: 0.5 }
+                        item.stock <= 0 && { opacity: 0.5 }
                     ]}
                     onPress={() => {
-                        if (item.countInStock <= 0) return;
+                        if (item.stock <= 0) return;
                         dispatch(addToCart(item));
                         Toast.show({
                             topOffset: 60,
@@ -130,7 +129,7 @@ const SingleProduct = (props) => {
                         });
                     }}
                     activeOpacity={0.7}
-                    disabled={item.countInStock <= 0}
+                    disabled={item.stock <= 0}
                 >
                     <Ionicons name="cart-outline" size={20} color={COLORS.white} />
                     <Text style={styles.addToCartText}>Add to Cart</Text>

@@ -62,6 +62,8 @@ const ProductContainer = (props) => {
                         .catch(() => {});
                     }
                 });
+            } else {
+                setUserProfile(null);
             }
         
             return () => {
@@ -70,7 +72,7 @@ const ProductContainer = (props) => {
                 setCategories([]);
                 setActive();
             };
-        }, [dispatch])
+        }, [dispatch, context.stateUser.isAuthenticated])
     );
 
     useEffect(() => {

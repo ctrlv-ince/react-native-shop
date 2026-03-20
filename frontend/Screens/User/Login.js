@@ -76,10 +76,7 @@ const Login = (props) => {
 
     useEffect(() => {
         if (context.stateUser.isAuthenticated === true) {
-            props.navigation.reset({
-                index: 0,
-                routes: [{ name: 'User Profile' }],
-            });
+            props.navigation.navigate('HomeScreen');
         }
     }, [context.stateUser.isAuthenticated]);
 

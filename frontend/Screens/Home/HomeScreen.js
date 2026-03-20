@@ -43,6 +43,8 @@ const HomeScreen = (props) => {
                         .catch(() => {});
                     }
                 });
+            } else {
+                setUserProfile(null);
             }
 
             return () => {

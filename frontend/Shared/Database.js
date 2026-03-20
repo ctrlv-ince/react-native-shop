@@ -71,7 +71,7 @@ export const removeCartItem = async (productId) => {
 export const clearCart = async () => {
      if (!db) await initDb();
      try {
-         await db.runAsync('DELETE FROM Cart');
+         await db.execAsync('DELETE FROM Cart;');
      } catch (error) {
           console.error('Error clearing cart', error);
      }

@@ -7,11 +7,14 @@ import axios from 'axios';
 import baseURL from '../../assets/common/baseurl';
 import { AuthContext } from '../../Context/Store/AuthGlobal';
 import { logoutUser } from '../../Context/Actions/Auth.actions';
+import { useDispatch } from 'react-redux';
+import { clearCart } from '../../Redux/Actions/cartActions';
 import { COLORS, SPACING, RADIUS, SHADOWS, COMMON_STYLES } from '../../assets/common/theme';
 
 const UserProfile = (props) => {
     const context = useContext(AuthContext);
     const navigation = useNavigation();
+    const reduxDispatch = useDispatch();
     const [userProfile, setUserProfile] = useState();
 
     useFocusEffect(
@@ -108,6 +111,7 @@ const UserProfile = (props) => {
                 onPress={() => {
                     SecureStore.deleteItemAsync('jwt');
                     logoutUser(context.dispatch);
+                    reduxDispatch(clearCart());
                 }}
                 activeOpacity={0.7}
             >

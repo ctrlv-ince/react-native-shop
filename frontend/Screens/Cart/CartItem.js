@@ -7,7 +7,7 @@ const CartItem = (props) => {
     return (
         <View style={styles.body}>
             <Image 
-                source={{ uri: data.images?.[0]?.url || data.image || 'https://fakeimg.pl/200x200/' }}
+                source={{ uri: data.images?.[0]?.url || data.image || 'https://fakeimg.pl/200x200/?text=No+Image' }}
                 style={styles.image}
             />
             <View style={styles.info}>

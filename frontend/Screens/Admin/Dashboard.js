@@ -76,10 +76,10 @@ const Dashboard = (props) => {
             </View>
 
             <View style={styles.grid}>
-                <StatCard title="Products" count={stats.products} icon="cube-outline" color={COLORS.primary} route="Products" />
-                <StatCard title="Orders" count={stats.orders} icon="receipt-outline" color={COLORS.warning} route="Orders" />
+                <StatCard title="Products" count={stats.products} icon="cube-outline" color={COLORS.primary} route="ProductsTab" />
+                <StatCard title="Orders" count={stats.orders} icon="receipt-outline" color={COLORS.warning} route="OrdersTab" />
                 <StatCard title="Users" count={stats.users} icon="people-outline" color={COLORS.accent} route="Users" />
-                <StatCard title="Categories" count={stats.categories} icon="grid-outline" color={COLORS.success} route="Categories" />
+                <StatCard title="Categories" count={stats.categories} icon="grid-outline" color={COLORS.success} route="CategoriesTab" />
             </View>
             
             <View style={styles.actions}>

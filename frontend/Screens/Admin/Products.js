@@ -49,12 +49,16 @@ const Products = (props) => {
         );
     };
 
-    const sendPromo = (id) => {
-        axios.post(`${baseURL}products/promo/${id}`)
-            .then(() => {
-                alert("Promo Notification Sent Successfully!");
-            })
-            .catch((error) => console.log(error));
+    const sendPromo = async (id) => {
+        try {
+            const token = await SecureStore.getItemAsync('jwt');
+            await axios.post(`${baseURL}products/promo/${id}`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            alert("Promo Notification Sent Successfully!");
+        } catch (error) {
+            console.log(error);
+        }
     };
 
     if (loading) return (

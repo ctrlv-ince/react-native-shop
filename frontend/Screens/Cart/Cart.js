@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { View, Dimensions, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { removeFromCart, clearCart } from '../../Redux/Actions/cartActions';
 import { SwipeListView } from 'react-native-swipe-list-view';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { AuthContext } from '../../Context/Store/AuthGlobal';
 import CartItem from './CartItem';
 import { COLORS, SPACING, RADIUS, SHADOWS, COMMON_STYLES } from '../../assets/common/theme';
 
@@ -14,11 +16,31 @@ const Cart = (props) => {
     const cartItems = useSelector(state => state.cartItems);
     const dispatch = useDispatch();
     const insets = useSafeAreaInsets();
+    const context = useContext(AuthContext);
+    const navigation = useNavigation();
 
     var total = 0;
     cartItems.forEach(cart => {
         return (total += cart.price * cart.quantity);
     });
+
+    // Login gate
+    if (!context.stateUser.isAuthenticated) {
+        return (
+            <View style={[styles.emptyContainer, { paddingTop: insets.top }]}>
+                <Ionicons name="lock-closed-outline" size={80} color={COLORS.textLight} />
+                <Text style={styles.emptyTitle}>Please Log In</Text>
+                <Text style={styles.emptySubtitle}>You need to be logged in to view your cart</Text>
+                <TouchableOpacity
+                    style={[COMMON_STYLES.primaryButton, { marginTop: SPACING.lg, paddingHorizontal: SPACING.xl }]}
+                    onPress={() => navigation.getParent()?.navigate('Home', { screen: 'UserNav' })}
+                    activeOpacity={0.7}
+                >
+                    <Text style={COMMON_STYLES.primaryButtonText}>Go to Login</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
 
     return (
         <>

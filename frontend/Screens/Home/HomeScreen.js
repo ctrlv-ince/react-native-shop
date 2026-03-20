@@ -175,7 +175,7 @@ const HomeScreen = (props) => {
                                     activeOpacity={0.7}
                                 >
                                     <Image
-                                        source={{ uri: item.images?.[0]?.url || 'https://fakeimg.pl/200x200/' }}
+                                        source={{ uri: item.images?.[0]?.url || 'https://fakeimg.pl/200x200/?text=No+Image' }}
                                         style={styles.featuredImage}
                                         resizeMode="cover"
                                     />

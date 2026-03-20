@@ -40,7 +40,7 @@ const SingleProduct = (props) => {
                 {/* Product Image */}
                 <View style={styles.imageContainer}>
                     <Image 
-                        source={{ uri: item.images?.[0]?.url || 'https://fakeimg.pl/400x400/' }}
+                        source={{ uri: item.images?.[0]?.url || 'https://fakeimg.pl/400x400/?text=No+Image' }}
                         resizeMode="contain"
                         style={styles.image}
                     />

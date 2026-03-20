@@ -135,7 +135,7 @@ const ProductForm = (props) => {
             {/* Image Section */}
             <View style={styles.imageCard}>
                 <View style={styles.imageContainer}>
-                    <Image style={styles.image} source={{ uri: mainImage ? mainImage : "https://fakeimg.pl/200x200/" }}/>
+                    <Image style={styles.image} source={{ uri: mainImage ? mainImage : "https://fakeimg.pl/200x200/?text=No+Image" }}/>
                 </View>
                 <View style={styles.photoButtons}>
                     <TouchableOpacity style={styles.photoButton} onPress={pickImage} activeOpacity={0.7}>

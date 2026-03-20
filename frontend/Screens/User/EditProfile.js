@@ -103,7 +103,7 @@ const EditProfile = (props) => {
                 <View style={styles.avatarContainer}>
                     <Image 
                         style={styles.image} 
-                        source={{ uri: mainImage ? mainImage : "https://fakeimg.pl/200x200/" }}
+                        source={{ uri: mainImage ? mainImage : "https://fakeimg.pl/200x200/?text=No+Image" }}
                     />
                 </View>
                 <View style={styles.photoButtons}>

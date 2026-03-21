@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "137575211675",
+    "project_id": "react-native-shop-232bf",
+    "storage_bucket": "react-native-shop-232bf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:137575211675:android:883fdc7bbf597388331c3e",
+        "android_client_info": {
+          "package_name": "com.gamezone.reactnative"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBozmiIAUOAPGymGD-gEcwoQoW9vAeHDeY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

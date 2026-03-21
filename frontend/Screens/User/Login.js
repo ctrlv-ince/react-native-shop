@@ -7,7 +7,7 @@ import Toast from 'react-native-toast-message';
 import { useDispatch } from 'react-redux';
 import { loadCartFromDB } from '../../Redux/Actions/cartActions';
 import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import { COLORS, SPACING, RADIUS, SHADOWS, COMMON_STYLES } from '../../assets/common/theme';
 
 import * as SecureStore from 'expo-secure-store';
@@ -15,6 +15,11 @@ import baseURL from '../../assets/common/baseurl';
 import { jwtDecode } from 'jwt-decode';
 
 WebBrowser.maybeCompleteAuthSession();
+
+GoogleSignin.configure({
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || 'YOUR_EXPO_CLIENT_ID',
+    iosClientId: process.env.EXPO_PUBLIC_IOS_CLIENT_ID || 'YOUR_IOS_CLIENT_ID',
+});
 
 const Login = (props) => {
     const context = useContext(AuthContext);
@@ -24,36 +29,24 @@ const Login = (props) => {
     const [error, setError] = useState('');
     const reduxDispatch = useDispatch();
 
-    const [request, response, promptAsync] = Google.useAuthRequest({
-        expoClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || 'YOUR_EXPO_CLIENT_ID',
-        iosClientId: process.env.EXPO_PUBLIC_IOS_CLIENT_ID || 'YOUR_IOS_CLIENT_ID',
-        androidClientId: process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID || 'YOUR_ANDROID_CLIENT_ID',
-    });
-
-    useEffect(() => {
-        if (response?.type === 'success') {
-            const { authentication } = response;
-            Toast.show({ topOffset: 60, type: 'info', text1: 'Authenticating with Google...' });
+    const handleGoogleSignIn = async () => {
+        try {
+            await GoogleSignin.hasPlayServices();
+            const userInfo = await GoogleSignin.signIn();
             
-            // Get user info from Google
-            fetch('https://www.googleapis.com/userinfo/v2/me', {
-                headers: { Authorization: `Bearer ${authentication.accessToken}` },
-            })
-            .then(res => res.json())
-            .then(userInfo => {
-                // Send to backend
-                return fetch(`${baseURL}users/google-login`, {
-                    method: 'POST',
-                    headers: {
-                        Accept: 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        email: userInfo.email,
-                        name: userInfo.name,
-                        photo: userInfo.picture
-                    })
-                });
+            Toast.show({ topOffset: 60, type: 'info', text1: 'Authenticating with Google...' });
+
+            fetch(`${baseURL}users/google-login`, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: userInfo.user.email,
+                    name: userInfo.user.name,
+                    photo: userInfo.user.photo
+                })
             })
             .then(res => res.json())
             .then(data => {
@@ -74,8 +67,20 @@ const Login = (props) => {
             .catch(err => {
                 Toast.show({ topOffset: 60, type: 'error', text1: 'Google Login Error', text2: err.message });
             });
+
+        } catch (error) {
+            if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+                // user cancelled the login flow
+            } else if (error.code === statusCodes.IN_PROGRESS) {
+                // operation is in progress already
+            } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+                Toast.show({ topOffset: 60, type: 'error', text1: 'Error', text2: 'Play Services not available/outdated' });
+            } else {
+                Toast.show({ topOffset: 60, type: 'error', text1: 'Google Login Error', text2: error.message });
+                console.error(error);
+            }
         }
-    }, [response]);
+    };
 
     useEffect(() => {
         if (context.stateUser.isAuthenticated === true) {
@@ -189,8 +194,7 @@ const Login = (props) => {
                 {/* Google Sign In */}
                 <TouchableOpacity
                     style={styles.googleButton}
-                    disabled={!request}
-                    onPress={() => promptAsync()}
+                    onPress={handleGoogleSignIn}
                     activeOpacity={0.7}
                 >
                     <Ionicons name="logo-google" size={18} color="#DB4437" />

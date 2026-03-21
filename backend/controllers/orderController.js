@@ -68,7 +68,10 @@ exports.createOrder = async (req, res) => {
 };
 
 exports.updateOrder = async (req, res) => {
-    const { Expo } = await import('expo-server-sdk');
+    // First find previous order to check status change
+    const previousOrder = await Order.findById(req.params.id);
+    if (!previousOrder) return res.status(400).send('Invalid Order ID');
+
     const order = await Order.findByIdAndUpdate(
         req.params.id,
         {
@@ -79,19 +82,41 @@ exports.updateOrder = async (req, res) => {
 
     if (!order) return res.status(400).send('the order cannot be update!');
 
-    if (order.user && order.user.pushToken && Expo.isExpoPushToken(order.user.pushToken)) {
-        let expo = new Expo();
-        let messages = [];
-        messages.push({
+    // Decrement stock if transitioning to Delivered
+    if (req.body.status === 'Delivered' && previousOrder.status !== 'Delivered') {
+        const bulkUpdateOps = order.orderItems.map(item => {
+            return {
+                updateOne: {
+                    filter: { _id: item.product },
+                    update: { $inc: { stock: -item.quantity } }
+                }
+            };
+        });
+        if (bulkUpdateOps.length > 0) {
+            await Product.bulkWrite(bulkUpdateOps);
+            console.log('Stock decremented for delivered order');
+        }
+    }
+
+    if (order.user && order.user.pushToken && order.user.pushToken.startsWith('ExponentPushToken[')) {
+        const message = {
             to: order.user.pushToken,
             sound: 'default',
             title: 'Order Status Updated',
             body: `Your order status has been updated to ${order.status}`,
             data: { orderId: order._id }
-        });
+        };
 
         try {
-            await expo.sendPushNotificationsAsync(messages);
+            await fetch('https://exp.host/--/api/v2/push/send', {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Accept-encoding': 'gzip, deflate',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(message),
+            });
             console.log("Push notification sent");
         } catch (error) {
             console.error("Error sending push notification", error);

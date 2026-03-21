@@ -7,7 +7,7 @@ const { width } = Dimensions.get('window');
 const CARD_WIDTH = width / 2 - 24;
 
 const ProductCard = (props) => {
-    const { name, price, images, stock, onPress } = props;
+    const { name, price, images, stock, onPress, rating, numReviews } = props;
     const [qty, setQty] = useState(1);
     const imageUrl = images?.[0]?.url;
 
@@ -24,6 +24,13 @@ const ProductCard = (props) => {
                 <Text style={styles.title} numberOfLines={2}>
                     {name}
                 </Text>
+                
+                <View style={styles.reviewContainer}>
+                    <Ionicons name="star" size={12} color="#f5c518" />
+                    <Text style={styles.ratingText}>{(rating || 0).toFixed(1)}</Text>
+                    <Text style={styles.reviewCountText}>({numReviews || 0} {numReviews === 1 ? 'review' : 'reviews'})</Text>
+                </View>
+
                 <Text style={styles.price}>₱{price}</Text>
 
                 {stock > 0 ? (
@@ -87,6 +94,21 @@ const styles = StyleSheet.create({
         color: COLORS.text,
         marginBottom: 4,
         lineHeight: 18,
+    },
+    reviewContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: SPACING.sm,
+        gap: 4,
+    },
+    ratingText: {
+        fontSize: 12,
+        fontWeight: '700',
+        color: COLORS.text,
+    },
+    reviewCountText: {
+        fontSize: 11,
+        color: COLORS.textMuted,
     },
     price: {
         fontSize: 18,

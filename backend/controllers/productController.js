@@ -105,37 +105,42 @@ exports.deleteProduct = (req, res) => {
 };
 
 exports.sendPromo = async (req, res) => {
-    const product = await Product.findById(req.params.id);
-    if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
-
-    const users = await User.find({ pushToken: { $exists: true, $ne: '' } });
-    
-    const { Expo } = await import('expo-server-sdk');
-    let expo = new Expo();
-    let messages = [];
-
-    for (let user of users) {
-        if (!Expo.isExpoPushToken(user.pushToken)) continue;
-
-        messages.push({
-            to: user.pushToken,
-            sound: 'default',
-            title: 'Special Promotion!',
-            body: `${product.name} is on sale! Check it out now!`,
-            data: { promoId: product._id }
-        });
-    }
-
     try {
-        let chunks = expo.chunkPushNotifications(messages);
-        let tickets = [];
-        for (let chunk of chunks) {
-            let ticketChunk = await expo.sendPushNotificationsAsync(chunk);
-            tickets.push(...ticketChunk);
+        const product = await Product.findById(req.params.id);
+        if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+
+        const users = await User.find({ pushToken: { $exists: true, $ne: '' } });
+        let messages = [];
+
+        for (let user of users) {
+             messages.push({
+                 to: user.pushToken,
+                 sound: 'default',
+                 title: 'Special Promotion! 🛍️',
+                 body: `${product.name} is now on sale! Check it out right now!`,
+                 data: { promoId: product._id }
+             });
         }
-        res.status(200).json({ success: true, message: 'Promo notifications sent', tickets });
+
+        if (messages.length > 0) {
+             const response = await fetch('https://exp.host/--/api/v2/push/send', {
+                 method: 'POST',
+                 headers: {
+                     'Accept': 'application/json',
+                     'Accept-encoding': 'gzip, deflate',
+                     'Content-Type': 'application/json',
+                 },
+                 body: JSON.stringify(messages),
+             });
+             
+             const data = await response.json();
+             return res.status(200).json({ success: true, message: 'Promo notifications sent', tickets: data });
+        } else {
+             return res.status(200).json({ success: true, message: 'No registered push tokens found to send.' });
+        }
+
     } catch (error) {
-         console.error('Error sending push notifications', error);
-         res.status(500).json({ success: false, error: error });
+         console.error('Error sending promo push notifications', error);
+         res.status(500).json({ success: false, error: error.message });
     }
 };

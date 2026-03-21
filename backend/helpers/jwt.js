@@ -16,6 +16,7 @@ function authJwt() {
             { url: /\/api\/v1\/reviews(.*)/, methods: ['GET', 'OPTIONS'] },
             `${api}/users/login`,
             `${api}/users/register`,
+            `${api}/users/google-login`,
         ]
     });
 }

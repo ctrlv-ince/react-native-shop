@@ -9,6 +9,7 @@ import { AuthContext } from '../../Context/Store/AuthGlobal';
 import { logoutUser } from '../../Context/Actions/Auth.actions';
 import { useDispatch } from 'react-redux';
 import { clearCart } from '../../Redux/Actions/cartActions';
+
 import { COLORS, SPACING, RADIUS, SHADOWS, COMMON_STYLES } from '../../assets/common/theme';
 
 const UserProfile = (props) => {
@@ -108,8 +109,8 @@ const UserProfile = (props) => {
             {/* Sign Out */}
             <TouchableOpacity 
                 style={styles.signOutButton}
-                onPress={() => {
-                    SecureStore.deleteItemAsync('jwt');
+                onPress={async () => {
+                    await SecureStore.deleteItemAsync('jwt');
                     logoutUser(context.dispatch);
                     reduxDispatch(clearCart());
                 }}

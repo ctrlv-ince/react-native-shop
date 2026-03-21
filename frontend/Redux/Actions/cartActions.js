@@ -1,9 +1,23 @@
 import { ADD_TO_CART, REMOVE_FROM_CART, CLEAR_CART, LOAD_CART } from '../constants';
 import * as DB from '../../Shared/Database';
+import * as SecureStore from 'expo-secure-store';
+import { jwtDecode } from 'jwt-decode';
+
+const getUserId = async () => {
+    try {
+        const token = await SecureStore.getItemAsync('jwt');
+        if (token) {
+            const decoded = jwtDecode(token);
+            return decoded.userId;
+        }
+    } catch(e) {}
+    return 'guest';
+}
 
 export const addToCart = (payload, cartQuantity = 1) => {
     return async (dispatch) => {
-        await DB.insertCartItem(payload, cartQuantity);
+        const userId = await getUserId();
+        await DB.insertCartItem(payload, cartQuantity, userId);
         dispatch({
             type: ADD_TO_CART,
             payload: { ...payload, quantityToAdd: cartQuantity }
@@ -13,7 +27,8 @@ export const addToCart = (payload, cartQuantity = 1) => {
 
 export const updateCartQty = (id, quantity) => {
     return async (dispatch) => {
-        await DB.updateCartItemQty(id, quantity);
+        const userId = await getUserId();
+        await DB.updateCartItemQty(id, quantity, userId);
         dispatch({
             type: 'UPDATE_CART_QTY',
             payload: { id, quantity }
@@ -23,7 +38,8 @@ export const updateCartQty = (id, quantity) => {
 
 export const removeFromCart = (payload) => {
     return async (dispatch) => {
-        await DB.removeCartItem(payload.id);
+        const userId = await getUserId();
+        await DB.removeCartItem(payload.id, userId);
         dispatch({
             type: REMOVE_FROM_CART,
             payload
@@ -33,7 +49,8 @@ export const removeFromCart = (payload) => {
 
 export const clearCart = () => {
     return async (dispatch) => {
-        await DB.clearCart();
+        const userId = await getUserId();
+        await DB.clearCart(userId);
         dispatch({
             type: CLEAR_CART
         });
@@ -42,7 +59,8 @@ export const clearCart = () => {
 
 export const loadCartFromDB = () => {
      return async (dispatch) => {
-          const items = await DB.fetchCartItems();
+          const userId = await getUserId();
+          const items = await DB.fetchCartItems(userId);
           // Map DB keys to normal Redux expected items
           const mappedItems = items.map(i => ({
                id: i.productId,

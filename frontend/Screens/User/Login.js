@@ -4,6 +4,8 @@ import { AuthContext } from '../../Context/Store/AuthGlobal';
 import { loginUser } from '../../Context/Actions/Auth.actions';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
+import { useDispatch } from 'react-redux';
+import { loadCartFromDB } from '../../Redux/Actions/cartActions';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import { COLORS, SPACING, RADIUS, SHADOWS, COMMON_STYLES } from '../../assets/common/theme';
@@ -20,6 +22,7 @@ const Login = (props) => {
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
+    const reduxDispatch = useDispatch();
 
     const [request, response, promptAsync] = Google.useAuthRequest({
         expoClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || 'YOUR_EXPO_CLIENT_ID',
@@ -76,7 +79,8 @@ const Login = (props) => {
 
     useEffect(() => {
         if (context.stateUser.isAuthenticated === true) {
-            props.navigation.navigate('HomeScreen');
+            reduxDispatch(loadCartFromDB());
+            props.navigation.navigate('Home');
         }
     }, [context.stateUser.isAuthenticated]);
 

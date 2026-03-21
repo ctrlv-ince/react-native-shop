@@ -100,7 +100,10 @@ const Register = (props) => {
                     text2: 'Please login into your account'
                 });
                 setTimeout(() => {
-                    props.navigation.navigate('Login');
+                    props.navigation.reset({
+                        index: 0,
+                        routes: [{ name: 'Login' }],
+                    });
                 }, 500);
             } else {
                 console.log("Registration Error:", data);

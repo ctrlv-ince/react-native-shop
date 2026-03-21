@@ -80,6 +80,10 @@ const Login = (props) => {
     useEffect(() => {
         if (context.stateUser.isAuthenticated === true) {
             reduxDispatch(loadCartFromDB());
+            props.navigation.reset({
+                index: 0,
+                routes: [{ name: 'User Profile' }],
+            });
             props.navigation.navigate('Home');
         }
     }, [context.stateUser.isAuthenticated]);

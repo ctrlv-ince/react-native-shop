@@ -102,7 +102,7 @@ const Checkout = (props) => {
                 {cartItems.map((item, index) => (
                     <View key={item.id || index} style={styles.itemRow}>
                         <Image
-                            source={{ uri: item.image || 'https://fakeimg.pl/50x50/?text=P' }}
+                            source={{ uri: item.images?.[0]?.url || item.image || 'https://fakeimg.pl/50x50/?text=P' }}
                             style={styles.itemImage}
                         />
                         <View style={styles.itemInfo}>

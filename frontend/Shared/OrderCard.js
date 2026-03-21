@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { updateOrderStatus } from '../Redux/Actions/orderActions';
 import { Ionicons } from '@expo/vector-icons';
@@ -62,7 +62,19 @@ const OrderCard = (props) => {
             <View style={styles.content}>
                 {/* Header */}
                 <View style={styles.headerRow}>
-                    <Text style={styles.orderId}>#{props.id?.slice(-6)}</Text>
+                    <View style={styles.userInfoContainer}>
+                        {props.user?.photo ? (
+                            <Image source={{ uri: props.user.photo }} style={styles.userAvatar} />
+                        ) : (
+                            <View style={styles.userAvatarFallback}>
+                                <Ionicons name="person" size={16} color={COLORS.primary} />
+                            </View>
+                        )}
+                        <View style={styles.userTextInfo}>
+                            <Text style={styles.orderId}>#{props.id?.slice(-6)}</Text>
+                            <Text style={styles.userName}>{props.user?.name || 'Unknown User'}</Text>
+                        </View>
+                    </View>
                     <View style={[styles.statusBadge, { backgroundColor: statusColor + '15' }]}>
                         <Text style={[styles.statusBadgeText, { color: statusColor }]}>{statusText}</Text>
                     </View>
@@ -70,19 +82,25 @@ const OrderCard = (props) => {
 
                 {/* Details */}
                 <View style={styles.detailsSection}>
-                    {props.user?.name && (
-                        <View style={styles.detailRow}>
-                            <Ionicons name="person-outline" size={14} color={COLORS.textMuted} />
-                            <Text style={styles.detailText}>{props.user.name}</Text>
-                        </View>
-                    )}
                     <View style={styles.detailRow}>
                         <Ionicons name="calendar-outline" size={14} color={COLORS.textMuted} />
                         <Text style={styles.detailText}>{props.dateOrdered?.split('T')[0]}</Text>
                     </View>
-                    <View style={styles.detailRow}>
-                        <Ionicons name="cube-outline" size={14} color={COLORS.textMuted} />
-                        <Text style={styles.detailText}>{props.orderItems?.length || 0} item(s)</Text>
+                    
+                    <View style={styles.itemsList}>
+                        <Text style={styles.itemsListTitle}>Ordered Items:</Text>
+                        {props.orderItems?.map((item, index) => (
+                            <View key={item.product?._id || index} style={styles.itemRow}>
+                                <Image 
+                                    source={{ uri: item.product?.images?.[0]?.url || item.product?.image || 'https://fakeimg.pl/50x50/?text=P' }} 
+                                    style={styles.itemImage} 
+                                />
+                                <View style={styles.itemInfo}>
+                                    <Text style={styles.itemName} numberOfLines={1}>{item.product?.name || 'Unknown Item'}</Text>
+                                    <Text style={styles.itemMeta}>Qty: {item.quantity}</Text>
+                                </View>
+                            </View>
+                        ))}
                     </View>
                 </View>
 
@@ -154,13 +172,41 @@ const styles = StyleSheet.create({
     headerRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         marginBottom: SPACING.md,
+    },
+    userInfoContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+    },
+    userAvatar: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        marginRight: SPACING.sm,
+    },
+    userAvatarFallback: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: COLORS.primaryLight,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: SPACING.sm,
+    },
+    userTextInfo: {
+        justifyContent: 'center',
     },
     orderId: {
         fontSize: 16,
         fontWeight: '800',
         color: COLORS.text,
+    },
+    userName: {
+        fontSize: 13,
+        color: COLORS.textMuted,
+        fontWeight: '500',
     },
     statusBadge: {
         paddingHorizontal: SPACING.md,
@@ -179,10 +225,49 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 8,
+        marginBottom: SPACING.sm,
     },
     detailText: {
         fontSize: 13,
         color: COLORS.textMuted,
+    },
+    itemsList: {
+        marginTop: SPACING.sm,
+        paddingTop: SPACING.sm,
+        borderTopWidth: 1,
+        borderTopColor: COLORS.surfaceAlt,
+    },
+    itemsListTitle: {
+        fontSize: 12,
+        fontWeight: '700',
+        color: COLORS.textMuted,
+        marginBottom: SPACING.sm,
+        textTransform: 'uppercase',
+    },
+    itemRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: SPACING.sm,
+    },
+    itemImage: {
+        width: 40,
+        height: 40,
+        borderRadius: RADIUS.sm,
+        backgroundColor: COLORS.surfaceAlt,
+        marginRight: SPACING.sm,
+    },
+    itemInfo: {
+        flex: 1,
+    },
+    itemName: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: COLORS.text,
+    },
+    itemMeta: {
+        fontSize: 12,
+        color: COLORS.textMuted,
+        marginTop: 2,
     },
     priceRow: {
         flexDirection: 'row',

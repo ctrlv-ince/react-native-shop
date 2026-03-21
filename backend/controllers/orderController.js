@@ -3,7 +3,7 @@ const { Product } = require('../models/product');
 
 exports.getOrders = async (req, res) => {
     const orderList = await Order.find()
-        .populate('user', 'name')
+        .populate('user', 'name photo')
         .populate('orderItems.product')
         .sort({ dateOrdered: -1 });
 

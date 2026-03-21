@@ -44,10 +44,9 @@ const Checkout = (props) => {
                             Toast.show({
                                 topOffset: 60,
                                 type: 'success',
-                                text1: 'Order placed successfully!',
+                                text1: 'Order placed!',
                                 text2: 'Check your order history for updates'
                             });
-                            props.navigation.navigate('Cart');
                         } catch (error) {
                             console.error(error);
                             Toast.show({
@@ -62,6 +61,37 @@ const Checkout = (props) => {
             ]
         );
     };
+
+    if (cartItems.length === 0) {
+        return (
+            <View style={[styles.container, { flex: 1, justifyContent: 'center', alignItems: 'center' }]}>
+                <View style={{
+                    width: 100,
+                    height: 100,
+                    borderRadius: 50,
+                    backgroundColor: COLORS.success + '15',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginBottom: SPACING.xl
+                }}>
+                    <Ionicons name="checkmark-circle" size={60} color={COLORS.success} />
+                </View>
+                <Text style={[styles.sectionTitle, { textAlign: 'center', fontSize: 24, marginBottom: SPACING.sm }]}>
+                    Order Successful!
+                </Text>
+                <Text style={[styles.addressText, { textAlign: 'center', marginBottom: SPACING.xl, paddingHorizontal: SPACING.xl }]}>
+                    Your order has been placed and is being processed. Thank you for shopping with us!
+                </Text>
+                <TouchableOpacity
+                    style={[COMMON_STYLES.primaryButton, { width: '80%' }]}
+                    onPress={() => props.navigation.navigate('CartScreen')}
+                    activeOpacity={0.7}
+                >
+                    <Text style={COMMON_STYLES.primaryButtonText}>Back to Shop</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
 
     return (
         <ScrollView contentContainerStyle={styles.container}>

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "gamezone-react-native",
+    "name": "Gamezone",
     "slug": "gamezone-react-native",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -16,10 +16,8 @@
       "package": "com.gamezone.reactnative",
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#0D1117",
+        "foregroundImage": "./assets/images/android-icon-foreground.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false

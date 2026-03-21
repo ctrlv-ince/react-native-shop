@@ -32,8 +32,16 @@ const Login = (props) => {
     const handleGoogleSignIn = async () => {
         try {
             await GoogleSignin.hasPlayServices();
-            const userInfo = await GoogleSignin.signIn();
+            const response = await GoogleSignin.signIn();
             
+            // Newer versions of the library wrap the payload in response.data.user
+            // Older versions just return response.user directly
+            const authenticatedUser = response.data?.user || response.user;
+
+            if (!authenticatedUser) {
+                 throw new Error("Unable to extract user details from Google.");
+            }
+
             Toast.show({ topOffset: 60, type: 'info', text1: 'Authenticating with Google...' });
 
             fetch(`${baseURL}users/google-login`, {
@@ -43,9 +51,9 @@ const Login = (props) => {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    email: userInfo.user.email,
-                    name: userInfo.user.name,
-                    photo: userInfo.user.photo
+                    email: authenticatedUser.email,
+                    name: authenticatedUser.name,
+                    photo: authenticatedUser.photo
                 })
             })
             .then(res => res.json())

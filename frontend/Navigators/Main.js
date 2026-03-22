@@ -13,6 +13,14 @@ import axios from 'axios';
 import baseURL from '../assets/common/baseurl';
 import { COLORS, SHADOWS } from '../assets/common/theme';
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
+
 import HomeNavigator from './HomeNavigator';
 import ShopNavigator from './ShopNavigator';
 import CartNavigator from './CartNavigator';
@@ -79,9 +87,14 @@ export default function Main({ navigation }) {
             if (finalStatus !== 'granted') {
                 return;
             }
-            token = (await Notifications.getExpoPushTokenAsync({
-                projectId: "41776cfd-14e6-4f34-bb30-17460f73481a",
-            })).data;
+            try {
+                token = (await Notifications.getExpoPushTokenAsync({
+                    projectId: "41776cfd-14e6-4f34-bb30-17460f73481a",
+                })).data;
+            } catch (err) {
+                alert("Push Token Error: " + err.message);
+                console.log("Push Token Error:", err);
+            }
         }
         return token;
     }

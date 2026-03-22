@@ -14,14 +14,32 @@ import { AuthContext } from '../../Context/Store/AuthGlobal';
 const SingleProduct = (props) => {
     const [item, setItem] = useState(props.route.params.item);
     const [quantity, setQuantity] = useState(1);
+    const [loading, setLoading] = useState(!item);
     const dispatch = useDispatch();
     const context = useContext(AuthContext);
     const { reviews, loading: reviewsLoading } = useSelector(state => state.reviewsState);
 
+    useEffect(() => {
+        if (!item && props.route.params?.productId) {
+            setLoading(true);
+            axios.get(`${baseURL}products/${props.route.params.productId}`)
+                .then(res => {
+                    setItem(res.data);
+                    setLoading(false);
+                })
+                .catch(err => {
+                    console.log(err);
+                    setLoading(false);
+                });
+        }
+    }, [props.route.params?.productId]);
+
     useFocusEffect(
         useCallback(() => {
-            dispatch(fetchReviews(item.id || item._id));
-        }, [dispatch])
+            if (item) {
+                dispatch(fetchReviews(item.id || item._id));
+            }
+        }, [dispatch, item])
     );
 
     const renderStars = (rating) => {
@@ -34,6 +52,14 @@ const SingleProduct = (props) => {
             />
         ));
     };
+
+    if (loading || !item) {
+        return (
+            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <ActivityIndicator size="large" color={COLORS.primary} />
+            </View>
+        );
+    }
 
     return (
         <View style={styles.container}>

@@ -50,7 +50,14 @@ export default function Main({ navigation }) {
                 });
             }
             if (data && data.promoId) {
-                // Future use for promotions
+                axios.get(`${baseURL}products/${data.promoId}`)
+                    .then(res => {
+                        navigation.navigate('Home', {
+                            screen: 'Product Detail',
+                            params: { item: res.data }
+                        });
+                    })
+                    .catch(err => console.log('Error fetching promo product:', err));
             }
         });
 

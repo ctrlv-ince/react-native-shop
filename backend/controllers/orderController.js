@@ -82,7 +82,11 @@ exports.updateOrder = async (req, res) => {
             status: req.body.status
         },
         { new: true }
-    ).populate('user');
+    ).populate('user')
+    .populate({
+        path: 'orderItems.product',
+        populate: 'category'
+    });
 
     if (!order) return res.status(400).send('the order cannot be update!');
 
@@ -108,11 +112,12 @@ exports.updateOrder = async (req, res) => {
             console.error(`Push token ${order.user.pushToken} is not a valid Expo push token`);
         } else {
             console.log(`Sending notification to user: ${order.user._id} via token: ${order.user.pushToken}`);
+            const orderRef = order._id.toString().slice(-6).toUpperCase();
             const messages = [{
                 to: order.user.pushToken,
                 sound: 'default',
                 title: 'Order Status Updated',
-                body: `Your order status has been updated to ${order.status}`,
+                body: `Your order #${orderRef} status has been updated to ${order.status}`,
                 data: { orderId: order._id }
             }];
 

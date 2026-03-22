@@ -37,10 +37,11 @@ export default function Main({ navigation }) {
     React.useEffect(() => {
         dispatch(loadCartFromDB());
 
-        // Notification listener logic
-        const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
-            const data = response.notification.request.content.data;
-            if (data && data.orderId) {
+        const handleNotificationResponse = (response) => {
+            const data = response?.notification?.request?.content?.data;
+            if (!data) return;
+
+            if (data.orderId) {
                 navigation.navigate('Home', {
                     screen: 'UserNav',
                     params: {
@@ -48,18 +49,42 @@ export default function Main({ navigation }) {
                         params: { orderId: data.orderId }
                     }
                 });
+                return;
             }
-            if (data && data.promoId) {
-                axios.get(`${baseURL}products/${data.promoId}`)
+
+            if (data.orderHistory) {
+                navigation.navigate('Home', {
+                    screen: 'UserNav',
+                    params: { screen: 'Order History' }
+                });
+                return;
+            }
+
+            const productId = data.promoId || data.productId;
+            if (productId) {
+                axios.get(`${baseURL}products/${productId}`)
                     .then(res => {
                         navigation.navigate('Home', {
                             screen: 'Product Detail',
                             params: { item: res.data }
                         });
                     })
-                    .catch(err => console.log('Error fetching promo product:', err));
+                    .catch(err => console.log('Error fetching product from notification:', err));
             }
+        };
+
+        // Notification listener logic
+        const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
+            handleNotificationResponse(response);
         });
+
+        // Handle cold start notification for iOS/Android
+        (async () => {
+            const lastResponse = await Notifications.getLastNotificationResponseAsync();
+            if (lastResponse) {
+                handleNotificationResponse(lastResponse);
+            }
+        })();
 
         registerForPushNotificationsAsync().then(async token => {
             if (token) {

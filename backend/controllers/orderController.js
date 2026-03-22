@@ -118,7 +118,7 @@ exports.updateOrder = async (req, res) => {
                 sound: 'default',
                 title: 'Order Status Updated',
                 body: `Your order #${orderRef} status has been updated to ${order.status}`,
-                data: { orderId: order._id }
+                data: { orderId: order._id, orderHistory: true }
             }];
 
             try {

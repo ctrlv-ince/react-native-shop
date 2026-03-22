@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { loadCartFromDB } from '../Redux/Actions/cartActions';
@@ -21,6 +22,7 @@ const Tab = createBottomTabNavigator();
 export default function Main({ navigation }) {
     const dispatch = useDispatch();
     const cartItems = useSelector(state => state.cartItems);
+    const insets = useSafeAreaInsets();
 
     React.useEffect(() => {
         dispatch(loadCartFromDB());
@@ -78,7 +80,7 @@ export default function Main({ navigation }) {
                 return;
             }
             token = (await Notifications.getExpoPushTokenAsync({
-                projectId: Constants.expoConfig?.extra?.eas?.projectId,
+                projectId: "41776cfd-14e6-4f34-bb30-17460f73481a",
             })).data;
         }
         return token;
@@ -92,8 +94,8 @@ export default function Main({ navigation }) {
                     backgroundColor: COLORS.white,
                     borderTopWidth: 1,
                     borderTopColor: COLORS.border,
-                    height: 60,
-                    paddingBottom: 8,
+                    height: 60 + insets.bottom,
+                    paddingBottom: 8 + insets.bottom,
                     paddingTop: 8,
                     ...SHADOWS.small,
                 },

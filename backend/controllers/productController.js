@@ -134,6 +134,7 @@ exports.sendPromo = async (req, res) => {
              });
              
              const data = await response.json();
+             console.log("Promo push notification response:", JSON.stringify(data));
              return res.status(200).json({ success: true, message: 'Promo notifications sent', tickets: data });
         } else {
              return res.status(200).json({ success: true, message: 'No registered push tokens found to send.' });

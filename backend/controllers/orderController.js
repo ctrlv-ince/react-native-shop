@@ -98,7 +98,7 @@ exports.updateOrder = async (req, res) => {
         }
     }
 
-    if (order.user && order.user.pushToken && order.user.pushToken.startsWith('ExponentPushToken[')) {
+    if (order.user && order.user.pushToken && order.user.pushToken.includes('PushToken[')) {
         const message = {
             to: order.user.pushToken,
             sound: 'default',
@@ -108,7 +108,7 @@ exports.updateOrder = async (req, res) => {
         };
 
         try {
-            await fetch('https://exp.host/--/api/v2/push/send', {
+            const response = await fetch('https://exp.host/--/api/v2/push/send', {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
@@ -117,7 +117,8 @@ exports.updateOrder = async (req, res) => {
                 },
                 body: JSON.stringify(message),
             });
-            console.log("Push notification sent");
+            const data = await response.json();
+            console.log("Push notification response:", JSON.stringify(data));
         } catch (error) {
             console.error("Error sending push notification", error);
         }

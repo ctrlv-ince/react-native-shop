@@ -7,6 +7,7 @@ import { loadCartFromDB } from '../Redux/Actions/cartActions';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import * as SecureStore from 'expo-secure-store';
+import Constants from 'expo-constants';
 import axios from 'axios';
 import baseURL from '../assets/common/baseurl';
 import { COLORS, SHADOWS } from '../assets/common/theme';
@@ -76,7 +77,9 @@ export default function Main({ navigation }) {
             if (finalStatus !== 'granted') {
                 return;
             }
-            token = (await Notifications.getExpoPushTokenAsync()).data;
+            token = (await Notifications.getExpoPushTokenAsync({
+                projectId: Constants.expoConfig?.extra?.eas?.projectId,
+            })).data;
         }
         return token;
     }

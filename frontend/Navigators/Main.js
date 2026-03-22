@@ -12,6 +12,7 @@ import Constants from 'expo-constants';
 import axios from 'axios';
 import baseURL from '../assets/common/baseurl';
 import { COLORS, SHADOWS } from '../assets/common/theme';
+import { AuthContext } from '../Context/Store/AuthGlobal';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -29,6 +30,7 @@ const Tab = createBottomTabNavigator();
 
 export default function Main({ navigation }) {
     const dispatch = useDispatch();
+    const context = React.useContext(AuthContext);
     const cartItems = useSelector(state => state.cartItems);
     const insets = useSafeAreaInsets();
 
@@ -58,7 +60,7 @@ export default function Main({ navigation }) {
                if (jwt) {
                     try {
                         const decoded = require('jwt-decode').jwtDecode(jwt);
-                        await axios.put(`${baseURL}users/${decoded.userId}`, 
+                        await axios.put(`${baseURL}users/${decoded.userId || decoded.id}`, 
                             { pushToken: token },
                             { headers: { Authorization: `Bearer ${jwt}` } }
                         );
@@ -73,7 +75,7 @@ export default function Main({ navigation }) {
         return () => {
             responseListener.remove();
         };
-    }, [dispatch]);
+    }, [dispatch, context.stateUser.isAuthenticated]);
 
     async function registerForPushNotificationsAsync() {
         let token;

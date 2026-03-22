@@ -2,6 +2,10 @@ const { Product } = require('../models/product');
 const { Category } = require('../models/category');
 const { User } = require('../models/user');
 const mongoose = require('mongoose');
+const { Expo } = require('expo-server-sdk');
+
+// Create a new Expo SDK client
+let expo = new Expo();
 
 exports.getProducts = async (req, res) => {
     let filter = {};
@@ -123,19 +127,26 @@ exports.sendPromo = async (req, res) => {
         }
 
         if (messages.length > 0) {
-             const response = await fetch('https://exp.host/--/api/v2/push/send', {
-                 method: 'POST',
-                 headers: {
-                     'Accept': 'application/json',
-                     'Accept-encoding': 'gzip, deflate',
-                     'Content-Type': 'application/json',
-                 },
-                 body: JSON.stringify(messages),
-             });
-             
-             const data = await response.json();
-             console.log("Promo push notification response:", JSON.stringify(data));
-             return res.status(200).json({ success: true, message: 'Promo notifications sent', tickets: data });
+            // Ensure all tokens are valid
+            const validMessages = messages.filter(m => Expo.isExpoPushToken(m.to));
+            
+            if (validMessages.length === 0) {
+                return res.status(400).json({ success: false, message: 'No valid Expo push tokens found' });
+            }
+
+            try {
+                const chunks = expo.chunkPushNotifications(validMessages);
+                const tickets = [];
+                for (const chunk of chunks) {
+                    const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
+                    tickets.push(...ticketChunk);
+                }
+                console.log("Promo push notifications sent:", JSON.stringify(tickets));
+                return res.status(200).json({ success: true, message: 'Promo notifications sent', tickets });
+            } catch (error) {
+                console.error('Error sending promo push notifications', error);
+                throw error;
+            }
         } else {
              return res.status(200).json({ success: true, message: 'No registered push tokens found to send.' });
         }

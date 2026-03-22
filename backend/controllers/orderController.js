@@ -1,5 +1,9 @@
 const { Order } = require('../models/order');
 const { Product } = require('../models/product');
+const { Expo } = require('expo-server-sdk');
+
+// Create a new Expo SDK client
+let expo = new Expo();
 
 exports.getOrders = async (req, res) => {
     const orderList = await Order.find()
@@ -98,30 +102,35 @@ exports.updateOrder = async (req, res) => {
         }
     }
 
-    if (order.user && order.user.pushToken && order.user.pushToken.includes('PushToken[')) {
-        const message = {
-            to: order.user.pushToken,
-            sound: 'default',
-            title: 'Order Status Updated',
-            body: `Your order status has been updated to ${order.status}`,
-            data: { orderId: order._id }
-        };
+    // 101: Notify user of status update
+    if (order.user && order.user.pushToken) {
+        if (!Expo.isExpoPushToken(order.user.pushToken)) {
+            console.error(`Push token ${order.user.pushToken} is not a valid Expo push token`);
+        } else {
+            console.log(`Sending notification to user: ${order.user._id} via token: ${order.user.pushToken}`);
+            const messages = [{
+                to: order.user.pushToken,
+                sound: 'default',
+                title: 'Order Status Updated',
+                body: `Your order status has been updated to ${order.status}`,
+                data: { orderId: order._id }
+            }];
 
-        try {
-            const response = await fetch('https://exp.host/--/api/v2/push/send', {
-                method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                    'Accept-encoding': 'gzip, deflate',
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(message),
-            });
-            const data = await response.json();
-            console.log("Push notification response:", JSON.stringify(data));
-        } catch (error) {
-            console.error("Error sending push notification", error);
+            try {
+                const chunks = expo.chunkPushNotifications(messages);
+                for (const chunk of chunks) {
+                    const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
+                    console.log("Push notification response:", JSON.stringify(ticketChunk));
+                }
+            } catch (error) {
+                console.error("Error sending push notification", error);
+            }
         }
+    } else {
+        console.log("Skipping notification: User or pushToken missing", {
+            userId: order.user ? order.user._id : 'missing',
+            hasPushToken: !!(order.user && order.user.pushToken)
+        });
     }
 
     res.send(order);

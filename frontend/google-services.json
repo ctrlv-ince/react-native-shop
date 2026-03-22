@@ -1,36 +1,26 @@
 {
   "project_info": {
-    "project_number": "511269155399",
-    "project_id": "gamezone-react-native",
-    "storage_bucket": "gamezone-react-native.firebasestorage.app"
+    "project_number": "503203797023",
+    "project_id": "gamezone-final",
+    "storage_bucket": "gamezone-final.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:511269155399:android:bfac3c642896f09f64f762",
+        "mobilesdk_app_id": "1:503203797023:android:46801afb25b78284ab9d2a",
         "android_client_info": {
           "package_name": "com.gamezone.reactnative"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "511269155399-vppneo1nf1s6jn2fqeih8oqpfngvblkr.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDdV26SCwoCYwvsOrp7l9y2tX-WNodPMTQ"
+          "current_key": "AIzaSyC5Bsv7xaqrMhVH0eSqIl8bD6hT0xSTQd0"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "511269155399-vppneo1nf1s6jn2fqeih8oqpfngvblkr.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }

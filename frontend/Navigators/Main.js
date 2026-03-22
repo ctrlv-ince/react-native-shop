@@ -73,19 +73,6 @@ export default function Main({ navigation }) {
             }
         };
 
-        // Notification listener logic
-        const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
-            handleNotificationResponse(response);
-        });
-
-        // Handle cold start notification for iOS/Android
-        (async () => {
-            const lastResponse = await Notifications.getLastNotificationResponseAsync();
-            if (lastResponse) {
-                handleNotificationResponse(lastResponse);
-            }
-        })();
-
         registerForPushNotificationsAsync().then(async token => {
             if (token) {
                const jwt = await SecureStore.getItemAsync('jwt');
@@ -105,7 +92,6 @@ export default function Main({ navigation }) {
         });
 
         return () => {
-            responseListener.remove();
         };
     }, [dispatch, context.stateUser.isAuthenticated]);
 

@@ -99,7 +99,7 @@ export default function Main({ navigation }) {
 
             try {
                 token = (await Notifications.getExpoPushTokenAsync({
-                    projectId: "41776cfd-14e6-4f34-bb30-17460f73481a",
+                    projectId: "b7ef4e91-b19b-4302-9be9-08bb7097eb85",
                 })).data;
             } catch (err) {
                 alert("Push Token Error: " + err.message);
